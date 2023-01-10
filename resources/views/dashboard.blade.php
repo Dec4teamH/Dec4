@@ -11,7 +11,8 @@
                 <div class="p-6 text-gray-900">
                     {{ __("You're logged in!") }}
                 </div>
-                <a href="https://github.com/login/oauth/authorize?client_id=6e4baa33ed2b392eb5e4">Log in with GitHub</a>
+                <a href="https://github.com/login/oauth/authorize?client_id=6e4baa33ed2b392eb5e4&scope=user:email">Log in
+                    with GitHub</a>
                 @if (filter_input(INPUT_GET, 'code') != null)
                     <p>access_token is
                         @php
@@ -40,7 +41,7 @@
                                 return $output;
                             }
                             
-                            // 2.codeの取得
+                            // codeの取得
                             $code = filter_input(INPUT_GET, 'code');
                             
                             // ポストするパラメータを生成
@@ -50,14 +51,40 @@
                                 'code' => $code,
                             ];
                             
-                            // 3. アクセストークンの取得
+                            //  アクセストークンの取得
                             $resultAT = httpRequest('post', 'https://github.com/login/oauth/access_token', $POST_DATA, ['Accept: application/json']);
                             
                             // 返却地をJsonでデコード
                             $resJsonAT = json_decode($resultAT, true);
-                            
+                            $token = $resJsonAT['access_token'];
                             // アクセストークン
-                            echo $resJsonAT['access_token'];
+                            echo $token;
+                        @endphp
+                    </p>
+                    <p>
+                        @php
+                            //  APIでユーザ情報の取得
+                            $resultEmail = httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
+                            
+                            // 返却地をJsonでデコード
+                            $resJsonEmail = json_decode($resultEmail, true);
+                            
+                            // email情報
+                            echo $resJsonEmail[0]['email'];
+                            // DB登録処理とか
+                        @endphp
+                    </p>
+                    <p>
+                        @php
+                            //  APIでユーザ情報の取得
+                            $resultUser = httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
+                            
+                            // 返却地をJsonでデコード
+                            $resJsonUser = json_decode($resultUser, true);
+                            
+                            // ユーザ情報
+                            echo $resJsonUser['login'];
+                            // DB登録処理とか
                         @endphp
                     </p>
                 @endif
