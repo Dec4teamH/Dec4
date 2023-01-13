@@ -11,8 +11,9 @@
                 <div class="p-6 text-gray-900">
                     {{ __("You're logged in!") }}
                 </div>
-                <a href="https://github.com/login/oauth/authorize?client_id=6e4baa33ed2b392eb5e4&scope=user:email">Log in
+                <a href="https://github.com/login/oauth/authorize?client_id=6e4baa33ed2b392eb5e4&scope=user">Log in
                     with GitHub</a>
+                {{-- scopeの範囲をのちに適切に設定 --}}
                 @if (filter_input(INPUT_GET, 'code') != null)
                     <p>access_token is
                         @php
@@ -70,22 +71,43 @@
                             $resJsonEmail = json_decode($resultEmail, true);
                             
                             // email情報
+                            // emailの表示設定を変更しないとエラー
                             echo $resJsonEmail[0]['email'];
                             // DB登録処理とか
                         @endphp
                     </p>
                     <p>
+                    <ul>
                         @php
                             //  APIでユーザ情報の取得
                             $resultUser = httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
                             
                             // 返却地をJsonでデコード
                             $resJsonUser = json_decode($resultUser, true);
-                            
-                            // ユーザ情報
-                            echo $resJsonUser['login'];
                             // DB登録処理とか
                         @endphp
+                        <li>username
+                            @php
+                                echo $resJsonUser['login'];
+                            @endphp
+                        </li>
+                        <li>url
+                            @php
+                                echo $resJsonUser['url'];
+                            @endphp
+                        </li>
+                        <li>repos
+                            @php
+                                echo $resJsonUser['repos_url'];
+                            @endphp
+                        </li>
+                        {{-- ここはuserのorganizationの権限の設定をしないとエラー --}}
+                        <li>orgs
+                            @php
+                                echo $resJsonUser['organizations_url'];
+                            @endphp
+                        </li>
+                    </ul>
                     </p>
                 @endif
             </div>
