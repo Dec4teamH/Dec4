@@ -15,98 +15,15 @@
                     with GitHub</a>
                 {{-- scopeの範囲をのちに適切に設定 --}}
                 @if (filter_input(INPUT_GET, 'code') != null)
-                    <p>access_token is
-                        @php
-                            function httpRequest($curlType, $url, $params = null, $header = null)
-                            {
-                                $headerParams = $header;
-                                $curl = curl_init($url);
-                            
-                                if ($curlType == 'post') {
-                                    curl_setopt($curl, CURLOPT_POST, true);
-                                    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
-                                } else {
-                                    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
-                                }
-                            
-                                curl_setopt($curl, CURLOPT_USERAGENT, 'USER_AGENT');
-                                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // オレオレ証明書対策
-                                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false); //
-                                curl_setopt($curl, CURLOPT_COOKIEJAR, 'cookie');
-                                curl_setopt($curl, CURLOPT_COOKIEFILE, 'tmp');
-                                curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true); // Locationヘッダを追跡
-                                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                                curl_setopt($curl, CURLOPT_HTTPHEADER, $headerParams);
-                                $output = curl_exec($curl);
-                                curl_close($curl);
-                                return $output;
-                            }
-                            
-                            // codeの取得
-                            $code = filter_input(INPUT_GET, 'code');
-                            
-                            // ポストするパラメータを生成
-                            $POST_DATA = [
-                                'client_id' => '6e4baa33ed2b392eb5e4',
-                                'client_secret' => 'dfb94b5417d2b39400bcc66da6933e5422cbac84',
-                                'code' => $code,
-                            ];
-                            
-                            //  アクセストークンの取得
-                            $resultAT = httpRequest('post', 'https://github.com/login/oauth/access_token', $POST_DATA, ['Accept: application/json']);
-                            
-                            // 返却地をJsonでデコード
-                            $resJsonAT = json_decode($resultAT, true);
-                            $token = $resJsonAT['access_token'];
-                            // アクセストークン
-                            echo $token;
-                        @endphp
-                    </p>
-                    <p>
-                        @php
-                            //  APIでユーザ情報の取得
-                            $resultEmail = httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
-                            
-                            // 返却地をJsonでデコード
-                            $resJsonEmail = json_decode($resultEmail, true);
-                            
-                            // email情報
-                            // emailの表示設定を変更しないとエラー
-                            echo $resJsonEmail[0]['email'];
-                            // DB登録処理とか
-                        @endphp
-                    </p>
+                    <p>access_token is {{ $resJsonAT['access_token'] }}</p>
+                    <p>{{ $resJsonEmail[0]['email'] }}</p>
                     <p>
                     <ul>
-                        @php
-                            //  APIでユーザ情報の取得
-                            $resultUser = httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
-                            
-                            // 返却地をJsonでデコード
-                            $resJsonUser = json_decode($resultUser, true);
-                            // DB登録処理とか
-                        @endphp
-                        <li>username
-                            @php
-                                echo $resJsonUser['login'];
-                            @endphp
-                        </li>
-                        <li>url
-                            @php
-                                echo $resJsonUser['url'];
-                            @endphp
-                        </li>
-                        <li>repos
-                            @php
-                                echo $resJsonUser['repos_url'];
-                            @endphp
-                        </li>
+                        <li>username {{ $resJsonUser['login'] }}</li>
+                        <li>url {{ $resJsonUser['url'] }}</li>
+                        <li>repos {{ $resJsonUser['repos_url'] }}</li>
                         {{-- ここはuserのorganizationの権限の設定をしないとエラー --}}
-                        <li>orgs
-                            @php
-                                echo $resJsonUser['organizations_url'];
-                            @endphp
-                        </li>
+                        <li>orgs {{ $resJsonUser['organizations_url'] }}</li>
                     </ul>
                     </p>
                 @endif
