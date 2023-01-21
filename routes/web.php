@@ -64,18 +64,24 @@ Route::get('/dashboard', function () {
                             $resJsonEmail =httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
 //  user情報
                             $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
- //  repos
+//  repos
                             $resJsonRepos=httpRequest('get', $resJsonUser['repos_url'], null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
 //  commit
-foreach ($resJsonRepos as $resJsonRepo){
-                            $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$resJsonAT['access_token'] ]);
-                        }
+                            foreach ($resJsonRepos as $resJsonRepo){
+                                $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$resJsonAT['access_token'] ]);
+                            }
 // issue
+                            foreach ($resJsonRepos as $resJsonRepo){
+                                $resJsonIssues[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['issues_url']) , null, ['Authorization: Bearer ' .$resJsonAT['access_token'] ]);
+                            }
 
 // merge
+                            foreach ($resJsonRepos as $resJsonRepo){
+                                $resJsonMerges[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['merges_url']) , null, ['Authorization: Bearer ' .$resJsonAT['access_token'] ]);
+                            }
 
-
-                            return view('dashboard',['resJsonAT'=>$resJsonAT,'resJsonEmail'=>$resJsonEmail,'resJsonUser'=>$resJsonUser,'resJsonRepos'=>$resJsonRepos,'resJsonCommits'=>$resJsonCommits]);
+                            return view('dashboard',['resJsonAT'=>$resJsonAT,'resJsonEmail'=>$resJsonEmail,'resJsonUser'=>$resJsonUser,
+                            'resJsonRepos'=>$resJsonRepos,'resJsonCommits'=>$resJsonCommits,'resJsonIssues'=>$resJsonIssues,'resJsonMerges'=>$resJsonMerges]);
                             }
                             //古いcodeが参照されてアクセストークンが取得できない問題の解消
                             else{
