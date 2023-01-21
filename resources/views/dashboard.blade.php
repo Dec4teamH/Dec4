@@ -22,6 +22,17 @@
                         <li>username {{ $resJsonUser['login'] }}</li>
                         <li>url {{ $resJsonUser['url'] }}</li>
                         <li>repos {{ $resJsonUser['repos_url'] }}</li>
+                        <div>repos
+                            @foreach ($resJsonRepos as $repo)
+                                <li>
+                                    <div> {{ $repo['name'] }} {{ $repo['commits_url'] }}</div>
+                                </li>
+                            @endforeach
+                        </div>
+                        @foreach ($resJsonCommits as $resJsonCommit)
+                            <li>★{{ var_dump($resJsonCommits) }}</li>
+                        @endforeach
+
                         {{-- ここはuserのorganizationの権限の設定をしないとエラー --}}
                         <li>orgs {{ $resJsonUser['organizations_url'] }}</li>
                     </ul>

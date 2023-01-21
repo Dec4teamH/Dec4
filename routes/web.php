@@ -64,7 +64,18 @@ Route::get('/dashboard', function () {
                             $resJsonEmail =httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
 //  user情報
                             $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
-                            return view('dashboard',['resJsonAT'=>$resJsonAT,'resJsonEmail'=>$resJsonEmail,'resJsonUser'=>$resJsonUser]);
+ //  repos
+                            $resJsonRepos=httpRequest('get', $resJsonUser['repos_url'], null, ['Authorization: Bearer ' . $resJsonAT['access_token']]);
+//  commit
+foreach ($resJsonRepos as $resJsonRepo){
+                            $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$resJsonAT['access_token'] ]);
+                        }
+// issue
+
+// merge
+
+
+                            return view('dashboard',['resJsonAT'=>$resJsonAT,'resJsonEmail'=>$resJsonEmail,'resJsonUser'=>$resJsonUser,'resJsonRepos'=>$resJsonRepos,'resJsonCommits'=>$resJsonCommits]);
                             }
                             //古いcodeが参照されてアクセストークンが取得できない問題の解消
                             else{
@@ -81,6 +92,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::resource('users',GithubController::class);
+Route::resource('repos',GithubController::class);
 
 require __DIR__.'/auth.php';

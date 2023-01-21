@@ -13,6 +13,7 @@ class GithubController extends Controller
      */
     public function index()
     {
+
 }
 
     /**
@@ -44,7 +45,7 @@ class GithubController extends Controller
      */
     public function show($id)
     {
-        //
+        return view('Repository')
     }
 
     /**
