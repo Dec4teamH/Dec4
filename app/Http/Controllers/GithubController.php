@@ -44,7 +44,7 @@ class GithubController extends Controller
     public function index()
     {
         // この下のアクセストークンは今後DBから取り出すが、今はDBがないので自分で打ち込む
-        $access_token="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";
+        $access_token="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";
   // DBから登録したアクセストークンをもとに登録したgithubのアカウントを表示
 
 //   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す

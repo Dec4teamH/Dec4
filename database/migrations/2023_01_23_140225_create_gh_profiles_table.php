@@ -14,7 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::create('gh_profiles', function (Blueprint $table) {
-            $table->id();
+            $table->int('id');
+            $table->string('acunt_name');
+            $table->string('access_token');
             $table->timestamps();
         });
     }

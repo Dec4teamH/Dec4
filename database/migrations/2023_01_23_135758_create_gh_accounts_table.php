@@ -15,6 +15,8 @@ return new class extends Migration
     {
         Schema::create('gh_accounts', function (Blueprint $table) {
             $table->id();
+            $table->int('user_id');
+            $table->int('gh_account_id');
             $table->timestamps();
         });
     }
