@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use Validator;
 use App\Models\Gh_profiles;
+use App\Models\Gh_accounts;
+use App\Models\Repositories;
 use Dotenv\Validator as DotenvValidator;
 use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth as FacadesAuth;
 
 // curlの情報をjson形式でreturn 
 function httpRequest($curlType, $url, $params = null, $header = null)
@@ -46,32 +49,11 @@ class GithubController extends Controller
     public function index()
     {
         // この下のアクセストークンは今後DBから取り出すが、今はDBがないので自分で打ち込む
-        $access_token="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";
+        $access_token="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";
   // DBから登録したアクセストークンをもとに登録したgithubのアカウントを表示
 
 //   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
-  // email
-                            $resJsonEmail =httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $access_token]);
-//  user情報
-                            $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
-//  repos
-                            $resJsonRepos=httpRequest('get', $resJsonUser['repos_url'], null, ['Authorization: Bearer ' . $access_token]);
-//  commit
-                            foreach ($resJsonRepos as $resJsonRepo){
-                                $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-                            }
-// issue
-                            foreach ($resJsonRepos as $resJsonRepo){
-                                $resJsonIssues[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['issues_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-                            }
-
-// merge
-                            foreach ($resJsonRepos as $resJsonRepo){
-                                $resJsonMerges[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['merges_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-                            }
-
-        return view('dashboard',['resJsonEmail'=>$resJsonEmail,'resJsonUser'=>$resJsonUser,
-                            'resJsonRepos'=>$resJsonRepos,'resJsonCommits'=>$resJsonCommits,'resJsonIssues'=>$resJsonIssues,'resJsonMerges'=>$resJsonMerges]);
+        return view('dashboard');
     }
 
     /**
@@ -104,9 +86,30 @@ class GithubController extends Controller
         $access_token=$request->access_token;
         // apiでデータ取得
 // User情報
-        $user_data =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
+        $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
+        // email
+        $resJsonEmail =httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $access_token]);
+//  repos
+        $resJsonRepos=httpRequest('get', $resJsonUser['repos_url'], null, ['Authorization: Bearer ' . $access_token]);
+//  commit
+        foreach ($resJsonRepos as $resJsonRepo){
+            $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$access_token ]);
+        }
+// issue
+        foreach ($resJsonRepos as $resJsonRepo){
+                    $resJsonIssues[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['issues_url']) , null, ['Authorization: Bearer ' .$access_token ]);
+        }
+// merge
+        foreach ($resJsonRepos as $resJsonRepo){
+                $resJsonMerges[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['merges_url']) , null, ['Authorization: Bearer ' .$access_token ]);
+        }
+
         // DBに格納
-        $result= Gh_profiles::create(['id'=>$user_data['id'],'acunt_name'=>$user_data['login'],'access_token'=>$access_token]);
+// Gh_account
+        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
+// Gh_ profiles
+        $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
+//  Repositories
         return redirect()->route("dashboard.index");
 }
 
