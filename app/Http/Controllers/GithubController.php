@@ -2,7 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Validator;
+use App\Models\Gh_profiles;
+use Dotenv\Validator as DotenvValidator;
+use App\Models\User;
+use Auth;
 use Illuminate\Http\Request;
+
+// curlの情報をjson形式でreturn 
 function httpRequest($curlType, $url, $params = null, $header = null)
                             {
                                 $headerParams = $header;
@@ -31,11 +38,6 @@ function httpRequest($curlType, $url, $params = null, $header = null)
                             }
 class GithubController extends Controller
 {
-
-    // curlの情報をjson形式で出力
-
-
-
     /**
      * Display a listing of the resource.
      *
@@ -44,7 +46,7 @@ class GithubController extends Controller
     public function index()
     {
         // この下のアクセストークンは今後DBから取り出すが、今はDBがないので自分で打ち込む
-        $access_token="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";
+        $access_token="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";
   // DBから登録したアクセストークンをもとに登録したgithubのアカウントを表示
 
 //   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
@@ -91,8 +93,14 @@ class GithubController extends Controller
     // dashboardのpostメソッド（アクセストークン登録後の遷移）
     public function store(Request $request)
     { 
-// あとでvalidation設定する
-        $access_token=$request->all();
+        // validation
+        $validator=Validator::make($request->all(),[
+            'access_token'=>'required',
+        ]);
+        if ($validator->fails()) {
+            return redirect()
+            ->route('dashboard.index');
+        }
         // DBに格納+apiで情報を入手
         return redirect()->route("dashboard.index");
 }

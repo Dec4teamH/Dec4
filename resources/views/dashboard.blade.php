@@ -11,7 +11,7 @@
                 <div class="p-6 text-gray-900">
                     {{ __("You're logged in!") }}
                 </div>
-                <form action="{{ route('dashboard.store') }}" method="get">
+                <form action="{{ route('dashboard.store') }}" method="post">
                     @csrf
                     <input type="text" name='access_token'>
                     <button type='submit'> Create</button>

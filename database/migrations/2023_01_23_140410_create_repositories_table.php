@@ -14,10 +14,10 @@ return new class extends Migration
     public function up()
     {
         Schema::create('repositories', function (Blueprint $table) {
-            $table->int('id');
-            $table->int('gh_account_id');
+            $table->integer('id');
+            $table->integer('gh_account_id');
             $table->string('repos_name');
-            $table->int('owner_id');
+            $table->integer('owner_id');
             $table->string('owner_name');
             $table->timestamp('created_date');
             $table->timestamps();
