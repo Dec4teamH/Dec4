@@ -46,7 +46,7 @@ class GithubController extends Controller
     public function index()
     {
         // この下のアクセストークンは今後DBから取り出すが、今はDBがないので自分で打ち込む
-        $access_token="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";
+        $access_token="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";
   // DBから登録したアクセストークンをもとに登録したgithubのアカウントを表示
 
 //   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
@@ -101,7 +101,12 @@ class GithubController extends Controller
             return redirect()
             ->route('dashboard.index');
         }
-        // DBに格納+apiで情報を入手
+        $access_token=$request->access_token;
+        // apiでデータ取得
+// User情報
+        $user_data =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
+        // DBに格納
+        $result= Gh_profiles::create(['id'=>$user_data['id'],'acunt_name'=>$user_data['login'],'access_token'=>$access_token]);
         return redirect()->route("dashboard.index");
 }
 
