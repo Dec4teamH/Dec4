@@ -61,12 +61,23 @@ class GithubController extends Controller
      */
     public function index()
     {
-        // この下のアクセストークンは今後DBから取り出すが、今はDBがないので自分で打ち込む
-        $access_token="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";
   // DBから登録したアクセストークンをもとに登録したgithubのアカウントを表示
-//   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
-        return view('dashboard');
+    $user_id=Auth::user()->id;
+    // gh_account_idをuser_idで条件づけて取得
+    $gh_account_ids=Gh_accounts::where('user_id',$user_id)->get();
+    // gh_account_idからacunt_nameを持ってくる
+    foreach($gh_account_ids as $gh_account_id){
+    $gh_prof=Gh_profiles::where('id',$gh_account_id['gh_account_id'])->get();
+    $gh_name[]=$gh_prof[0]->acunt_name;
     }
+    if(isset($gh_name)) {
+        return view('dashboard',["gh_names"=>$gh_name]);
+    }
+    else{
+//   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
+    return view ('dashboard');
+    }
+}
 
     /**
      * Show the form for creating a new resource.
