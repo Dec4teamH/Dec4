@@ -2,7 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use Validator;
+use App\Models\Gh_profiles;
+use App\Models\Gh_accounts;
+use App\Models\Repositories;
+use Dotenv\Validator as DotenvValidator;
+use App\Models\User;
+use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth as FacadesAuth;
+
+
+// githubapiから取得したじかんをDBに格納できるtimestampがたに変換
+// 0000-00-00T00:00:00Zを日本時間に直すかは考える
+function fix_timezone($timestamp){
+    $year=mb_substr($timestamp,0,4);
+    $month=mb_substr($timestamp,5,2);
+    $day=mb_substr($timestamp,8,2);
+    $hour=mb_substr($timestamp,11,2);
+    $min=mb_substr($timestamp,14,2);
+    $sec=mb_substr($timestamp,17,2);
+    $fixed_time=$year."-".$month."-".$day." ".$hour.":".$min.":".$sec;
+    return $fixed_time;
+}
+// curlの情報をjson形式でreturn 
 function httpRequest($curlType, $url, $params = null, $header = null)
                             {
                                 $headerParams = $header;
@@ -31,11 +54,6 @@ function httpRequest($curlType, $url, $params = null, $header = null)
                             }
 class GithubController extends Controller
 {
-
-    // curlの情報をjson形式で出力
-
-
-
     /**
      * Display a listing of the resource.
      *
@@ -44,32 +62,10 @@ class GithubController extends Controller
     public function index()
     {
         // この下のアクセストークンは今後DBから取り出すが、今はDBがないので自分で打ち込む
-        $access_token="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";
+        $access_token="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";
   // DBから登録したアクセストークンをもとに登録したgithubのアカウントを表示
-
 //   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
-  // email
-                            $resJsonEmail =httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $access_token]);
-//  user情報
-                            $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
-//  repos
-                            $resJsonRepos=httpRequest('get', $resJsonUser['repos_url'], null, ['Authorization: Bearer ' . $access_token]);
-//  commit
-                            foreach ($resJsonRepos as $resJsonRepo){
-                                $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-                            }
-// issue
-                            foreach ($resJsonRepos as $resJsonRepo){
-                                $resJsonIssues[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['issues_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-                            }
-
-// merge
-                            foreach ($resJsonRepos as $resJsonRepo){
-                                $resJsonMerges[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['merges_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-                            }
-
-        return view('dashboard',['resJsonEmail'=>$resJsonEmail,'resJsonUser'=>$resJsonUser,
-                            'resJsonRepos'=>$resJsonRepos,'resJsonCommits'=>$resJsonCommits,'resJsonIssues'=>$resJsonIssues,'resJsonMerges'=>$resJsonMerges]);
+        return view('dashboard');
     }
 
     /**
@@ -91,9 +87,46 @@ class GithubController extends Controller
     // dashboardのpostメソッド（アクセストークン登録後の遷移）
     public function store(Request $request)
     { 
-// あとでvalidation設定する
-        $access_token=$request->all();
-        // DBに格納+apiで情報を入手
+        // validation
+        $validator=Validator::make($request->all(),[
+            'access_token'=>'required',
+        ]);
+        if ($validator->fails()) {
+            return redirect()
+            ->route('dashboard.index');
+        }
+        $access_token=$request->access_token;
+        // apiでデータ取得
+// User情報
+        $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
+        // email
+        $resJsonEmail =httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $access_token]);
+//  repos
+        $resJsonRepos=httpRequest('get', $resJsonUser['repos_url'], null, ['Authorization: Bearer ' . $access_token]);
+//  commit
+        foreach ($resJsonRepos as $resJsonRepo){
+            $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$access_token ]);
+        }
+// issue
+        foreach ($resJsonRepos as $resJsonRepo){
+                    $resJsonIssues[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['issues_url']) , null, ['Authorization: Bearer ' .$access_token ]);
+        }
+// merge
+        foreach ($resJsonRepos as $resJsonRepo){
+                $resJsonMerges[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['merges_url']) , null, ['Authorization: Bearer ' .$access_token ]);
+        }
+
+        // DBに格納
+// Gh_account
+        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
+// Gh_ profiles
+        $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
+//  Repositories
+        foreach($resJsonRepos as $resJsonRepo){
+                $result=Repositories::create(['id'=>$resJsonRepo['id'],'gh_account_id'=>$resJsonUser['id'],'repos_name'=>$resJsonRepo['name'],'owner_id'=>$resJsonRepo['owner']['id'],'owner_name'=>$resJsonRepo['owner']['login'],
+                'created_date'=>fix_timezone($resJsonRepo['created_at'])
+                ]);
+}
         return redirect()->route("dashboard.index");
 }
 
