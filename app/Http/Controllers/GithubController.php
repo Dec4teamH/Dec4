@@ -11,6 +11,7 @@ use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
+use DB;
 
 
 // githubapiから取得したじかんをDBに格納できるtimestampがたに変換
@@ -131,12 +132,36 @@ class GithubController extends Controller
 // Gh_account
         $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
 // Gh_ profiles
-        $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
+        // githubのaccountidがテーブルに存在しているのか確認
+        $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
+        if(!($ghIdCheck)){
+            // idが存在しないならDBに追加
+            $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
+        }else{
+            // idが存在するならDBを上書き
+            DB::table('gh_profiles')
+            ->where('id',$resJsonUser['id'])
+            ->update([
+                'id'=>$resJsonUser['id'],
+                'acunt_name'=>$resJsonUser['login'],
+                'access_token'=>$access_token
+            ]);
+        }
+
 //  Repositories
         foreach($resJsonRepos as $resJsonRepo){
+            $repoIdCheck=DB::table('repositories')->where('id', $resJsonRepo['id'])->exists();
+            if(!($repoIdCheck)){
                 $result=Repositories::create(['id'=>$resJsonRepo['id'],'gh_account_id'=>$resJsonUser['id'],'repos_name'=>$resJsonRepo['name'],'owner_id'=>$resJsonRepo['owner']['id'],'owner_name'=>$resJsonRepo['owner']['login'],
-                'created_date'=>fix_timezone($resJsonRepo['created_at'])
+                'created_date'=>fix_timezone($resJsonRepo['created_at'])]);
+            }else{
+                DB::table('repositories')
+                ->where('id', $resJsonRepo['id'])
+                ->update([
+                    'id'=>$resJsonRepo['id']
                 ]);
+            }
+            
 }
         return redirect()->route("dashboard.index");
 }
