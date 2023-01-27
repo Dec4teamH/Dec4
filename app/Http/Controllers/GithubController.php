@@ -174,8 +174,21 @@ class GithubController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        
+    {// $id=acunt_name
+        // dd($id);
+        // 名前からuser_profを取得
+        $gh_id=DB::table('gh_profiles')->where('acunt_name',$id)->get();
+        //  dd($gh_id);
+        // gh_idから選択したユーザーのリポジトリ一覧を取得
+        $repositories=DB::table('repositories')->where('owner_id',$gh_id[0]->id)->get();
+        // dd($repositories);
+// リポジトリの更新があったら、データを取得
+
+        return view ('Repository',['repositories'=>$repositories]);
+
+
+
+
     }
 
     /**
@@ -186,7 +199,7 @@ class GithubController extends Controller
      */
     public function edit($id)
     {
-        //
+        
     }
 
     /**
