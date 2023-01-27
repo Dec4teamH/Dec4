@@ -26,6 +26,7 @@ function fix_timezone($timestamp){
     $fixed_time=$year."-".$month."-".$day." ".$hour.":".$min.":".$sec;
     return $fixed_time;
 }
+
 // curlの情報をjson形式でreturn 
 function httpRequest($curlType, $url, $params = null, $header = null)
                             {
@@ -53,6 +54,56 @@ function httpRequest($curlType, $url, $params = null, $header = null)
                                 $Output= json_decode($output, true);
                                 return $Output;
                             }
+
+
+// ユーザーと登録したgh_accountの関連、gh_accountの情報を取得してDBに登録
+function gh_user($access_token){
+// User情報
+        $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
+        // Gh_ profiles
+        // githubのaccountidがテーブルに存在しているのか確認
+        $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
+        if(!($ghIdCheck)){
+            // idが存在しないならDBに追加
+            // Gh_account
+        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
+            $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
+        }else{
+            // idが存在するならDBを上書き
+            DB::table('gh_profiles')
+            ->where('id',$resJsonUser['id'])
+            ->update([
+                'id'=>$resJsonUser['id'],
+                'acunt_name'=>$resJsonUser['login'],
+                'access_token'=>$access_token
+            ]);
+        }
+}
+
+// repositry情報をDBに登録
+function gh_repository($access_token){
+//  repos
+        $user_inf=DB::table('gh_profiles')->where('access_token',$access_token)->get();
+        // dd($user_inf);
+        $resJsonRepos=httpRequest('get', "https://api.github.com/users/".$user_inf[0]->acunt_name."/repos", null, ['Authorization: Bearer ' . $access_token]);
+        //  DB格納
+        foreach($resJsonRepos as $resJsonRepo){
+            $repoIdCheck=DB::table('repositories')->where('id', $resJsonRepo['id'])->exists();
+            if(!($repoIdCheck)){
+                $result=Repositories::create(['id'=>$resJsonRepo['id'],'gh_account_id'=>$user_inf[0]->id,'repos_name'=>$resJsonRepo['name'],'owner_id'=>$resJsonRepo['owner']['id'],'owner_name'=>$resJsonRepo['owner']['login'],
+                'created_date'=>fix_timezone($resJsonRepo['created_at'])]);
+            }else{
+                DB::table('repositories')
+                ->where('id', $resJsonRepo['id'])
+                ->update([
+                    'id'=>$resJsonRepo['id']
+                ]);
+            }
+}
+}
+
+
+
 class GithubController extends Controller
 {
     /**
@@ -109,61 +160,27 @@ class GithubController extends Controller
         }
         $access_token=$request->access_token;
         // apiでデータ取得
-// User情報
-        $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
-        // email
-        $resJsonEmail =httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $access_token]);
-//  repos
-        $resJsonRepos=httpRequest('get', $resJsonUser['repos_url'], null, ['Authorization: Bearer ' . $access_token]);
-//  commit
-        foreach ($resJsonRepos as $resJsonRepo){
-            $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-        }
-// issue
-        foreach ($resJsonRepos as $resJsonRepo){
-                    $resJsonIssues[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['issues_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-        }
-// merge
-        foreach ($resJsonRepos as $resJsonRepo){
-                $resJsonMerges[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['merges_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-        }
-
         // DBに格納
+// user
+        gh_user($access_token);
+// repository
+        gh_repository($access_token);
+// email
+        $resJsonEmail =httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $access_token]);
 
-// Gh_ profiles
-        // githubのaccountidがテーブルに存在しているのか確認
-        $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
-        if(!($ghIdCheck)){
-            // idが存在しないならDBに追加
-            // Gh_account
-        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
-            $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
-        }else{
-            // idが存在するならDBを上書き
-            DB::table('gh_profiles')
-            ->where('id',$resJsonUser['id'])
-            ->update([
-                'id'=>$resJsonUser['id'],
-                'acunt_name'=>$resJsonUser['login'],
-                'access_token'=>$access_token
-            ]);
-        }
+// //  commit
+//         foreach ($resJsonRepos as $resJsonRepo){
+//             $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$access_token ]);
+//         }
+// // issue
+//         foreach ($resJsonRepos as $resJsonRepo){
+//                     $resJsonIssues[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['issues_url']) , null, ['Authorization: Bearer ' .$access_token ]);
+//         }
+// // merge
+//         foreach ($resJsonRepos as $resJsonRepo){
+//                 $resJsonMerges[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['merges_url']) , null, ['Authorization: Bearer ' .$access_token ]);
+//         }
 
-//  Repositories
-        foreach($resJsonRepos as $resJsonRepo){
-            $repoIdCheck=DB::table('repositories')->where('id', $resJsonRepo['id'])->exists();
-            if(!($repoIdCheck)){
-                $result=Repositories::create(['id'=>$resJsonRepo['id'],'gh_account_id'=>$resJsonUser['id'],'repos_name'=>$resJsonRepo['name'],'owner_id'=>$resJsonRepo['owner']['id'],'owner_name'=>$resJsonRepo['owner']['login'],
-                'created_date'=>fix_timezone($resJsonRepo['created_at'])]);
-            }else{
-                DB::table('repositories')
-                ->where('id', $resJsonRepo['id'])
-                ->update([
-                    'id'=>$resJsonRepo['id']
-                ]);
-            }
-            
-}
         return redirect()->route("dashboard.index");
 }
 
@@ -174,8 +191,21 @@ class GithubController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        
+    {// $id=acunt_name
+        // dd($id);
+        // 名前からuser_profを取得
+        $gh_id=DB::table('gh_profiles')->where('acunt_name',$id)->get();
+        //  dd($gh_id);
+        // gh_idから選択したユーザーのリポジトリ一覧を取得
+        $repositories=DB::table('repositories')->where('owner_id',$gh_id[0]->id)->get();
+        // dd($repositories);
+// リポジトリの更新があったら、データを取得
+
+        return view ('Repository',['repositories'=>$repositories]);
+
+
+
+
     }
 
     /**
@@ -186,7 +216,7 @@ class GithubController extends Controller
      */
     public function edit($id)
     {
-        //
+        
     }
 
     /**
