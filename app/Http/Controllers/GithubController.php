@@ -11,6 +11,7 @@ use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
+use DB;
 
 
 // githubapiから取得したじかんをDBに格納できるtimestampがたに変換
@@ -61,12 +62,23 @@ class GithubController extends Controller
      */
     public function index()
     {
-        // この下のアクセストークンは今後DBから取り出すが、今はDBがないので自分で打ち込む
-        $access_token="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";
   // DBから登録したアクセストークンをもとに登録したgithubのアカウントを表示
-//   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
-        return view('dashboard');
+    $user_id=Auth::user()->id;
+    // gh_account_idをuser_idで条件づけて取得
+    $gh_account_ids=Gh_accounts::where('user_id',$user_id)->get();
+    // gh_account_idからacunt_nameを持ってくる
+    foreach($gh_account_ids as $gh_account_id){
+    $gh_prof=Gh_profiles::where('id',$gh_account_id['gh_account_id'])->get();
+    $gh_name[]=$gh_prof[0]->acunt_name;
     }
+    if(isset($gh_name)) {
+        return view('dashboard',["gh_names"=>$gh_name]);
+    }
+    else{
+//   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
+    return view ('dashboard');
+    }
+}
 
     /**
      * Show the form for creating a new resource.
@@ -117,15 +129,40 @@ class GithubController extends Controller
         }
 
         // DBに格納
-// Gh_account
-        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
+
 // Gh_ profiles
-        $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
+        // githubのaccountidがテーブルに存在しているのか確認
+        $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
+        if(!($ghIdCheck)){
+            // idが存在しないならDBに追加
+            // Gh_account
+        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
+            $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
+        }else{
+            // idが存在するならDBを上書き
+            DB::table('gh_profiles')
+            ->where('id',$resJsonUser['id'])
+            ->update([
+                'id'=>$resJsonUser['id'],
+                'acunt_name'=>$resJsonUser['login'],
+                'access_token'=>$access_token
+            ]);
+        }
+
 //  Repositories
         foreach($resJsonRepos as $resJsonRepo){
+            $repoIdCheck=DB::table('repositories')->where('id', $resJsonRepo['id'])->exists();
+            if(!($repoIdCheck)){
                 $result=Repositories::create(['id'=>$resJsonRepo['id'],'gh_account_id'=>$resJsonUser['id'],'repos_name'=>$resJsonRepo['name'],'owner_id'=>$resJsonRepo['owner']['id'],'owner_name'=>$resJsonRepo['owner']['login'],
-                'created_date'=>fix_timezone($resJsonRepo['created_at'])
+                'created_date'=>fix_timezone($resJsonRepo['created_at'])]);
+            }else{
+                DB::table('repositories')
+                ->where('id', $resJsonRepo['id'])
+                ->update([
+                    'id'=>$resJsonRepo['id']
                 ]);
+            }
+            
 }
         return redirect()->route("dashboard.index");
 }
@@ -137,8 +174,21 @@ class GithubController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        
+    {// $id=acunt_name
+        // dd($id);
+        // 名前からuser_profを取得
+        $gh_id=DB::table('gh_profiles')->where('acunt_name',$id)->get();
+        //  dd($gh_id);
+        // gh_idから選択したユーザーのリポジトリ一覧を取得
+        $repositories=DB::table('repositories')->where('owner_id',$gh_id[0]->id)->get();
+        // dd($repositories);
+// リポジトリの更新があったら、データを取得
+
+        return view ('Repository',['repositories'=>$repositories]);
+
+
+
+
     }
 
     /**
@@ -149,7 +199,7 @@ class GithubController extends Controller
      */
     public function edit($id)
     {
-        //
+        
     }
 
     /**
