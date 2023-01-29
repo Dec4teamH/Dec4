@@ -27,4 +27,8 @@ Route::middleware('auth')->group(function () {
 
 Route::resource('dashboard',GithubController::class)->middleware(['auth', 'verified']);
 
+Route::get('/graph',function(){
+    return view('Gitgraph');
+});
+
 require __DIR__.'/auth.php';
