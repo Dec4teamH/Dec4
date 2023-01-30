@@ -8,7 +8,9 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <canvas id='canvas' width="400" height="300"></canvas>
+                <div id="graph" class="flex justify-center">
+                    <canvas id='canvas' width="500" height="400" class=></canvas>
+                </div>
             </div>
             <script src={{ asset('/js/graph.js') }}></script>
 </x-app-layout>
