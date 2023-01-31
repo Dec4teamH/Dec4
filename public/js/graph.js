@@ -13,16 +13,20 @@ let W = w / 2;
    // 円
     context.beginPath();
     context.arc(W, H, H - 30, 0, 2 * Math.PI);
+    
+// canvasが動いているかの判定
+let stop_is = true;
+const stop = () => {
+    stop_is = !stop_is;
+    requestAnimationFrame(step);
+}
+
+
 context.stroke();
-    let r = 5;
-    let g = 3;
-    let b = 1;
-    let tm = 0;
-    let t = 0;
+    let r = 100;let g = 60;let b = 200;
+    let tm = 0;let t = 0;
     // 255>かの判別
-    let r_tell = true;
-    let g_tell = true;
-    let b_tell = true;
+    let r_tell = true;let g_tell = true;let b_tell = true;
 const step = () => {
     // 色の処理
     if (t > 10) {
@@ -74,6 +78,9 @@ const step = () => {
     context.fill();
     tm++;
     t++;
-    requestAnimationFrame(step);
+    if (stop_is) {
+        requestAnimationFrame(step);
+    }
 };
 requestAnimationFrame(step);
+

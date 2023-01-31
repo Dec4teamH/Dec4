@@ -11,6 +11,7 @@
                 <div id="graph" class="flex justify-center">
                     <canvas id='canvas' width="500" height="400" class=></canvas>
                 </div>
+                <input type="button" value="start/stop" onclick="stop()">
             </div>
             <script src={{ asset('/js/graph.js') }}></script>
 </x-app-layout>
