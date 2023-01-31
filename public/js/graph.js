@@ -9,18 +9,16 @@ let h = document.getElementById('canvas').clientHeight;
 // 円の中心の座標
 let H = h / 2;
 let W = w / 2;
+let arrow_s_w=0;
+let arrow_s_h = 0;
+let speed = 2;
 
-   // 円
-    context.beginPath();
-    context.arc(W, H, H - 30, 0, 2 * Math.PI);
-    
 // canvasが動いているかの判定
 let stop_is = true;
 const stop = () => {
     stop_is = !stop_is;
     requestAnimationFrame(step);
 }
-
 
 context.stroke();
     let r = 100;let g = 60;let b = 200;
@@ -68,16 +66,27 @@ const step = () => {
     console.log(r, g, b);  
     context.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
     // 矢印
-    let theta = (tm/720) * Math.PI;
-    let arow_s_w = W + (H - 30) * Math.sin(theta);
-    let arow_s_h = H - (H - 30) * Math.cos(theta);
+    let theta = (speed*tm/720) * Math.PI;
+    arow_s_w = W + (H - 30) * Math.sin(theta);
+    arow_s_h = H - (H - 30) * Math.cos(theta);
+    if (theta >= Math.PI / 6) {
+        // 前のcanvas消す
+        context.globalCompositeOperation = "destination-out";
+        context.beginPath();
+        context.arc(W + (H - 30) * Math.sin(theta - Math.PI / 6), H - (H - 30) * Math.cos(theta - Math.PI / 6), 20, 0, 2 * Math.PI);
+        context.fill();
+        context.beginPath();
+        context.arc(arow_s_w, arow_s_h, 24, theta-Math.PI/2, Math.PI-Math.PI/2 + theta);
+        context.fill();
+    }
+    // context.clearRect( W + (H - 30) * Math.sin(theta-Math.PI/6)-20, H - (H - 30) * Math.cos(theta-Math.PI/6)-20,40,40)
+    context.globalCompositeOperation = "source-over";
     context.beginPath();
-    context.moveTo(arow_s_w, arow_s_h);
-    context.lineTo(arow_s_w + 20 * Math.sin((11 * Math.PI / 6) + theta), arow_s_h - 20 * Math.cos((11 * Math.PI / 6) + theta));
-    context.lineTo(arow_s_w + 20 * Math.sin((7 * Math.PI / 6) + theta), arow_s_h - 20 * Math.cos((7 * Math.PI / 6) + theta));
+    context.arc(arow_s_w, arow_s_h, 23, 0, 2 * Math.PI);
     context.fill();
     tm++;
     t++;
+
     if (stop_is) {
         requestAnimationFrame(step);
     }

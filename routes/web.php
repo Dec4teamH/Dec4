@@ -31,4 +31,8 @@ Route::get('/graph',function(){
     return view('Gitgraph');
 });
 
+Route::get('/popup',function(){
+    return view("popup");
+});
+
 require __DIR__.'/auth.php';
