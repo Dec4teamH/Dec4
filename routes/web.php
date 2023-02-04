@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GithubController;
+use App\Http\Controllers\Test_commitController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -26,5 +27,8 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::resource('dashboard',GithubController::class)->middleware(['auth', 'verified']);
+
+//Test_commitのルーティング
+Route::resource('commit',Test_commitController::class);
 
 require __DIR__.'/auth.php';

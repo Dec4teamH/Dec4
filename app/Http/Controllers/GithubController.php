@@ -60,6 +60,7 @@ function httpRequest($curlType, $url, $params = null, $header = null)
 function gh_user($access_token){
 // User情報
         $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
+        //dd($resJsonUser);
         // Gh_ profiles
         // githubのaccountidがテーブルに存在しているのか確認
         $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
@@ -84,7 +85,7 @@ function gh_user($access_token){
 function gh_repository($access_token){
 //  repos
         $user_inf=DB::table('gh_profiles')->where('access_token',$access_token)->get();
-        // dd($user_inf);
+        //dd($user_inf);
         $resJsonRepos=httpRequest('get', "https://api.github.com/users/".$user_inf[0]->acunt_name."/repos", null, ['Authorization: Bearer ' . $access_token]);
         //  DB格納
         foreach($resJsonRepos as $resJsonRepo){
@@ -163,6 +164,7 @@ class GithubController extends Controller
         // DBに格納
 // user
         gh_user($access_token);
+        //ddd($resJsonUser);
 // repository
         gh_repository($access_token);
 // email
@@ -199,14 +201,10 @@ class GithubController extends Controller
         //  dd($gh_id);
         // gh_idから選択したユーザーのリポジトリ一覧を取得
         $repositories=DB::table('repositories')->where('owner_id',$gh_id[0]->id)->get();
-        // dd($repositories);
+        //dd($repositories[0]->repos_name);
 // リポジトリの更新があったら、データを取得
 
         return view ('Repository',['repositories'=>$repositories]);
-
-
-
-
     }
 
     /**
