@@ -5,6 +5,11 @@ context = canvas.getContext('2d');
 // 画面サイズ取得
 let w = document.getElementById('canvas').clientWidth;
 let h = document.getElementById('canvas').clientHeight;
+// コミットの数（仮置き）
+const num = 3;
+// サイクルの状態（仮置き）
+const cicle_state="good"
+
 
 // 円の中心の座標
 let H = h / 2;
@@ -12,6 +17,26 @@ let W = w / 2;
 let arrow_s_w=0;
 let arrow_s_h = 0;
 let speed = 2;
+    // 円の中に簡単な情報を表示
+    // 総数
+    context.beginPath();
+    context.font = "13pt Arial";
+    context.fillText("今日の総コミット数", W-75 , H-100 );
+    context.fill();
+    context.beginPath();
+    context.font="50pt Arial";
+    context.fillText(`${num}回`, W -50, H-30 );
+    context.fill();
+    // サイクル速度
+    context.beginPath();
+    context.font = "13pt Arial";
+context.fillText("サイクルの状態", W - 60, H+10 );
+    context.fill();
+    context.beginPath();
+    context.font="50pt Arial";
+    context.fillText(`${cicle_state}`, W -75, H+70 );
+
+    
 
 // canvasが動いているかの判定
 let stop_is = true;
