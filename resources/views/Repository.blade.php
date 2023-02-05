@@ -12,7 +12,10 @@
                     @foreach ($repositories as $repository)
                         <ul>
                             <li>
-                                <a href="{{ route('commit.index', $repository->id) }}">{{ $repository->repos_name }}</a>
+                                <form action="{{ route('commit.store', $repository->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit">{{ $repository->repos_name }}</button>
+                                </form>
                             </li>
                         </ul>
                     @endforeach

@@ -45,7 +45,8 @@ class Test_commitController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //repositoryのidは引数で取得済み
+        return view('Test_commit');
     }
 
     /**
