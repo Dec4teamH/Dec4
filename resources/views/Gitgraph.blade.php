@@ -9,9 +9,34 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div id="graph" class="flex justify-center">
-                    <canvas id='canvas' width="500" height="400" class=></canvas>
+
+                    <canvas id='canvas' width="500" height="400" data="good"></canvas>
+
+                    <div>
+                        @if ($state === 'commit')
+                            <div>
+                                <select id="state" name="selectbox">
+                                    <option value="commit">commit</option>
+                                    <option value="merge">merge</option>
+                                </select>
+                            </div>
+                        @else
+                            <div>
+                                <select id="state" name="selectbox">
+                                    <option value="commit">commit</option>
+                                    <option value="merge" selected>merge</option>
+                                </select>
+                            </div>
+                        @endif
+                    </div>
                 </div>
                 <input type="button" value="start/stop" onclick="stop()">
+
             </div>
+            <script>
+                // 受け取った変数をjsに渡す
+                const data = "good";
+            </script>
             <script src={{ asset('/js/graph.js') }}></script>
+            <script src={{ asset('/js/app.js') }}></script>
 </x-app-layout>

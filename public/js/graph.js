@@ -5,6 +5,10 @@ context = canvas.getContext('2d');
 // 画面サイズ取得
 let w = document.getElementById('canvas').clientWidth;
 let h = document.getElementById('canvas').clientHeight;
+//データ取得
+console.log(data);
+
+
 // コミットの数（仮置き）
 const num = 3;
 // サイクルの状態（仮置き）
@@ -104,7 +108,7 @@ const step = () => {
         context.arc(arow_s_w, arow_s_h, 24, theta-Math.PI/2, Math.PI-Math.PI/2 + theta);
         context.fill();
     }
-    // context.clearRect( W + (H - 30) * Math.sin(theta-Math.PI/6)-20, H - (H - 30) * Math.cos(theta-Math.PI/6)-20,40,40)
+
     context.globalCompositeOperation = "source-over";
     context.beginPath();
     context.arc(arow_s_w, arow_s_h, 23, 0, 2 * Math.PI);
