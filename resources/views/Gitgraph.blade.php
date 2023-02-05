@@ -30,12 +30,15 @@
                         @endif
                     </div>
                 </div>
-                <input type="button" value="start/stop" onclick="stop()">
 
             </div>
             <script>
                 // 受け取った変数をjsに渡す
-                const data = "good";
+                const state = `{{ $state }}`;
+                // コミットの数（仮置き）
+                const num = 3;
+                // サイクルの状態（仮置き）
+                const cicle_state = "good"
             </script>
             <script src={{ asset('/js/graph.js') }}></script>
             <script src={{ asset('/js/app.js') }}></script>

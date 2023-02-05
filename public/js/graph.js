@@ -6,13 +6,9 @@ context = canvas.getContext('2d');
 let w = document.getElementById('canvas').clientWidth;
 let h = document.getElementById('canvas').clientHeight;
 //データ取得
-console.log(data);
+console.log(state);
 
 
-// コミットの数（仮置き）
-const num = 3;
-// サイクルの状態（仮置き）
-const cicle_state="good"
 
 
 // 円の中心の座標
@@ -23,10 +19,18 @@ let arrow_s_h = 0;
 let speed = 2;
     // 円の中に簡単な情報を表示
     // 総数
+if (state === "commit") {
     context.beginPath();
     context.font = "13pt Arial";
-    context.fillText("今日の総コミット数", W-75 , H-100 );
+    context.fillText("今日の総コミット数", W - 75, H - 100);
     context.fill();
+} else {
+    context.beginPath();
+    context.font = "13pt Arial";
+    context.fillText("今日の総マージ数", W - 75, H - 100);
+    context.fill();
+}
+    
     context.beginPath();
     context.font="50pt Arial";
     context.fillText(`${num}回`, W -50, H-30 );
@@ -38,17 +42,8 @@ context.fillText("サイクルの状態", W - 60, H+10 );
     context.fill();
     context.beginPath();
     context.font="50pt Arial";
-    context.fillText(`${cicle_state}`, W -75, H+70 );
-
+    context.fillText(`${cicle_state}`, W - 75, H + 70);
     
-
-// canvasが動いているかの判定
-let stop_is = true;
-const stop = () => {
-    stop_is = !stop_is;
-    requestAnimationFrame(step);
-}
-
 context.stroke();
     let r = 100;let g = 60;let b = 200;
     let tm = 0;let t = 0;
@@ -115,10 +110,8 @@ const step = () => {
     context.fill();
     tm++;
     t++;
-
-    if (stop_is) {
-        requestAnimationFrame(step);
-    }
+    
+    requestAnimationFrame(step);
 };
 requestAnimationFrame(step);
 
