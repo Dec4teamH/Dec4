@@ -36,8 +36,8 @@ Route::get('/graph/merge',function(){
     return view('Gitgraph',["state"=>"merge"]);
 })->name("merge");
 
-Route::get('/popup',function(){
-    return view("popup");
-});
+Route::get('graph/issue',function(){
+    return view('Gitissue_view');
+})->name('issue');
 
 require __DIR__.'/auth.php';
