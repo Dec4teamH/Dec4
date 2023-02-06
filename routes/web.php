@@ -27,4 +27,17 @@ Route::middleware('auth')->group(function () {
 
 Route::resource('dashboard',GithubController::class)->middleware(['auth', 'verified']);
 
+// graph commit表示のルーテイング
+Route::get('/graph/commit',function(){
+    return view('Gitgraph',["state"=>"commit"]);
+})->name("commit");
+// graph merge表示のルーテイング
+Route::get('/graph/merge',function(){
+    return view('Gitgraph',["state"=>"merge"]);
+})->name("merge");
+
+Route::get('/popup',function(){
+    return view("popup");
+});
+
 require __DIR__.'/auth.php';
