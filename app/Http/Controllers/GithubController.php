@@ -6,6 +6,7 @@ use Validator;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
 use App\Models\Repositories;
+use App\Models\Pullrequests;
 use Dotenv\Validator as DotenvValidator;
 use App\Models\User;
 use Auth;
@@ -17,6 +18,7 @@ use DB;
 // githubapiから取得したじかんをDBに格納できるtimestampがたに変換
 // 0000-00-00T00:00:00Zを日本時間に直すかは考える
 function fix_timezone($timestamp){
+    if($timestamp!=null){
     $year=mb_substr($timestamp,0,4);
     $month=mb_substr($timestamp,5,2);
     $day=mb_substr($timestamp,8,2);
@@ -25,6 +27,9 @@ function fix_timezone($timestamp){
     $sec=mb_substr($timestamp,17,2);
     $fixed_time=$year."-".$month."-".$day." ".$hour.":".$min.":".$sec;
     return $fixed_time;
+}else{
+    return null;
+}
 }
 
 // curlの情報をjson形式でreturn 
@@ -100,6 +105,33 @@ function gh_repository($access_token){
                 ]);
             }
 }
+}
+
+function tell_close_flag($close_flag){
+    if($close_flag=='open'){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+// pullrequest情報をDBに登録
+function gh_pullreqest($repos_id,$gh_user_id){
+    $repos_name=DB::table('repositories')->where('id',$repos_id)->first();
+    // dd($repos_name->repos_name);
+    $access_token=DB::table('gh_profiles')->where('id',$gh_user_id)->first();
+    // dd($access_token->access_token);
+    // dd($access_token->acunt_name);
+    // github apiでpullrequestデータを取得
+    $resJsonPullreqs=httpRequest('get', "https://api.github.com/repos/".$access_token->acunt_name."/".$repos_name->repos_name."/"."pulls", null, ['Authorization: Bearer ' . $access_token->access_token]);
+    // dd($resJsonPullreqs);
+    // DBに格納
+    foreach($resJsonPullreqs as $resJsonPullreq){
+        // DB格納
+        // dd($resJsonPullreq['id']);
+        $result=Pullrequests::create(['id'=>$resJsonPullreq["id"],'repos_id'=>$repos_id,'title'=>$resJsonPullreq["title"],'body'=>$resJsonPullreq["body"],
+        'close_flag'=>tell_close_flag($resJsonPullreq["state"]),'user_id'=>$access_token->id,'open_date'=>fix_timezone($resJsonPullreq["created_at"]),'close_date'=>fix_timezone($resJsonPullreq["closed_at"]),'merged_at'=>fix_timezone($resJsonPullreq["merged_at"])]);
+    }
 }
 
 
@@ -200,6 +232,7 @@ class GithubController extends Controller
         $repositories=DB::table('repositories')->where('owner_id',$gh_id[0]->id)->get();
         // dd($repositories);
 // リポジトリの更新があったら、データを取得
+        gh_pullreqest(530597634,111882261);
 
         return view ('Repository',['repositories'=>$repositories]);
 
