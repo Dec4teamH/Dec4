@@ -14,7 +14,15 @@ return new class extends Migration
     public function up()
     {
         Schema::create('pullrequests', function (Blueprint $table) {
-            $table->id();
+            $table->integer('id')->primary();
+            $table->integer('repos_id');
+            $table->string('title')->nullable();
+            $table->string('body')->nullable();
+            $table->boolean('close_flag');
+            $table->integer('user_id');
+            $table->timestamp('open_date');
+            $table->timestamp('close_date')->nullable();
+            $table->timestamp('merge_date')->nullable();
             $table->timestamps();
         });
     }

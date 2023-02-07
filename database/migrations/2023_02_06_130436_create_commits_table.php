@@ -14,7 +14,12 @@ return new class extends Migration
     public function up()
     {
         Schema::create('commits', function (Blueprint $table) {
-            $table->id();
+            $table->string('id')->primary();
+            $table->integer('repos_id');
+            $table->string('sha');
+            $table->integer('user_id');
+            $table->string('message')->nullable();
+            $table->timestamp('commit_date');
             $table->timestamps();
         });
     }
