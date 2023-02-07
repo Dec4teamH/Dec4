@@ -124,13 +124,17 @@ function gh_pullreqest($repos_id,$gh_user_id){
     // dd($access_token->acunt_name);
     // github apiでpullrequestデータを取得
     $resJsonPullreqs=httpRequest('get', "https://api.github.com/repos/".$access_token->acunt_name."/".$repos_name->repos_name."/"."pulls", null, ['Authorization: Bearer ' . $access_token->access_token]);
-    // dd($resJsonPullreqs);
+    dd($resJsonPullreqs);
     // DBに格納
     foreach($resJsonPullreqs as $resJsonPullreq){
+        $pullreqIdCheck=DB::table('pullrequests')->where('id', $resJsonPullreq['id'])->exists();
         // DB格納
         // dd($resJsonPullreq['id']);
+        if(!($pullreqIdCheck)){
         $result=Pullrequests::create(['id'=>$resJsonPullreq["id"],'repos_id'=>$repos_id,'title'=>$resJsonPullreq["title"],'body'=>$resJsonPullreq["body"],
         'close_flag'=>tell_close_flag($resJsonPullreq["state"]),'user_id'=>$access_token->id,'open_date'=>fix_timezone($resJsonPullreq["created_at"]),'close_date'=>fix_timezone($resJsonPullreq["closed_at"]),'merged_at'=>fix_timezone($resJsonPullreq["merged_at"])]);
+        }
+        // closed_at,merged_atの処理をelseでかく
     }
 }
 
