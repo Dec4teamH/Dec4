@@ -6,7 +6,7 @@ use Validator;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
 use App\Models\Repositories;
-// use App\Models\Issue;
+use App\Models\Issue;
 use Dotenv\Validator as DotenvValidator;
 use App\Models\User;
 use Auth;
@@ -53,6 +53,48 @@ function httpRequest($curlType, $url, $params = null, $header = null){
     return $Output;
 }
 
+// commitの登録
+function register_commit($repos_id){
+    // 引数のidはreositoryのidを指定
+    // アクセストークン取得
+    $gh_id=DB::table('repositories')->where('id',$id)->get('gh_account_id');
+    // dd($gh_id[0]->gh_account_id)
+    // stdClassから変数のみを取得して比較
+    $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->gh_account_id)->get();
+    // $user_name=$user_inf[0]->acunt_name;
+    // $access_token=$user_inf[0]->access_token;
+    // dd($user_name);
+    // dd($access_token);
+
+    // repositoryの名前を取得
+    $name=DB::table('repositories')->where('id',$id)->get('repos_name');
+    // $name=$name[0]->repos_name;
+    // dd($name);
+
+    $resJsonCommits=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/commits", null, ['Authorization: Bearer ' . $access_token]);
+
+    //$commit0=$resJsonCommits[0];
+    //dd($commit0['node_id']);
+    //dd($commit0['commit']['author']['name']);
+    // dd($commit0['commit']['message']);
+    // dd($commit0['commit']['author']['date']);
+    //dd(fix_timezone($commit0['commit']['author']['date']));
+
+
+    foreach($resJsonCommits as $resJsonCommit){
+        $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit['node_id'])->exists();
+        if(!($commitIdCheck)){
+            // DBにデータがないなら登録              
+            Commit::create(['id'=>$resJsonCommit['id'],'repository_id'=>$id,'sha'=>$resJsonCommit['sha'],'user_id'=>$resJsonCommit['commit']['author']['id'],
+            'message'=>$resJsonCommit['commit']['message'],'commit_date'=>fix_timezone($resJsonCommit['commit']['author']['date'])]);
+        }else{
+            continue;
+        }
+    }
+
+}
+
+// issueの登録
 function register_issue($repos_id){
     // 引数のidはrepositoryのidを指定
         // アクセストークン取得
@@ -167,6 +209,9 @@ class IssueController extends Controller
      */
     public function show($id)
     {
+        // commitの登録
+        register_commit($repos_id);
+        // issueの登録
         register_issue($id);
     }
 

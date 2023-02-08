@@ -3,7 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GithubController;
-use App\Http\Controllers\IssueController;
+use App\Http\Controllers\DetailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,7 +29,7 @@ Route::middleware('auth')->group(function () {
 
 Route::resource('dashboard',GithubController::class)->middleware(['auth', 'verified']);
 
-Route::resource('issue',IssueController::class);
+Route::resource('detail',DetailController::class);
 
 // graph commit表示のルーテイング
 Route::get('/graph/commit',function(){
