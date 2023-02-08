@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('repositories_id');
             $table->foreign('repositories_id')->references('id')->on('repositories')->cascadeOnDelete();
             $table->string('sha');
-            $table->integer('user_id');
+            $table->bigInteger('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->string('message')->nullable();
             $table->timestamp('commit_date');
