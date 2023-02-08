@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('repositories', function (Blueprint $table) {
-            $table->integer('id');
+            $table->integer('id')->primary();
             $table->integer('gh_account_id');
             $table->string('repos_name');
             $table->integer('owner_id');
