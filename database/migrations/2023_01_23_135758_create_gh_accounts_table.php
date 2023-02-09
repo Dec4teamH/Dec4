@@ -14,9 +14,11 @@ return new class extends Migration
     public function up()
     {
         Schema::create('gh_accounts', function (Blueprint $table) {
-            $table->id();
-            $table->integer('user_id');
+            $table->id()->primary();
+            $table->bigInteger('user_id')->unsigned();
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->integer('gh_account_id');
+            $table->foreign('gh_account_id')->references('id')->on('gh_profiles')->cascadeOnDelete();
             $table->timestamps();
         });
     }

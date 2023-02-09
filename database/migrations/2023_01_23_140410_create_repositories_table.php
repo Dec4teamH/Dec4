@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('gh_account_id');
             $table->string('repos_name');
             $table->integer('owner_id');
+            $table->foreign('owner_id')->references('id')->on('gh_profiles')->cascadeOnDelete();
             $table->string('owner_name');
             $table->timestamp('created_date');
             $table->timestamps();
