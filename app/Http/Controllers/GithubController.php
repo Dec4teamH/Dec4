@@ -71,8 +71,9 @@ function gh_user($access_token){
         if(!($ghIdCheck)){
             // idが存在しないならDBに追加
             // Gh_account
+                    $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
         $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
-            $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
+    
         }else{
             // idが存在するならDBを上書き
             DB::table('gh_profiles')
