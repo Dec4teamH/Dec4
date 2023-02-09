@@ -65,6 +65,7 @@ function httpRequest($curlType, $url, $params = null, $header = null)
 function gh_user($access_token){
 // User情報
         $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
+        //dd($resJsonUser);
         // Gh_ profiles
         // githubのaccountidがテーブルに存在しているのか確認
         $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
@@ -92,6 +93,7 @@ function gh_repository($access_token){
         $user_inf=DB::table('gh_profiles')->where('access_token',$access_token)->get();
         // dd($user_inf);
         $resJsonRepos=httpRequest('get', "https://api.github.com/users/".$user_inf[0]->acunt_name."/repos", null, ['Authorization: Bearer ' . $access_token]);
+        // dd($resJsonRepos);
         //  DB格納
         foreach($resJsonRepos as $resJsonRepo){
             $repoIdCheck=DB::table('repositories')->where('id', $resJsonRepo['id'])->exists();
