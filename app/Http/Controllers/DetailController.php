@@ -6,7 +6,8 @@ use Validator;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
 use App\Models\Repositories;
-use App\Models\Issue;
+use App\Models\Issues;
+use App\Models\Commits;
 use Dotenv\Validator as DotenvValidator;
 use App\Models\User;
 use Auth;
@@ -57,21 +58,21 @@ function httpRequest($curlType, $url, $params = null, $header = null){
 function register_commit($repos_id){
     // 引数のidはreositoryのidを指定
     // アクセストークン取得
-    $gh_id=DB::table('repositories')->where('id',$id)->get('gh_account_id');
-    // dd($gh_id[0]->gh_account_id)
+    $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
+    // dd($gh_id[0]->owner_id);
     // stdClassから変数のみを取得して比較
-    $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->gh_account_id)->get();
-    // $user_name=$user_inf[0]->acunt_name;
-    // $access_token=$user_inf[0]->access_token;
+    $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->owner_id)->get();
+    $user_name=$user_inf[0]->acunt_name;
+    $access_token=$user_inf[0]->access_token;
     // dd($user_name);
     // dd($access_token);
 
     // repositoryの名前を取得
-    $name=DB::table('repositories')->where('id',$id)->get('repos_name');
+    $name=DB::table('repositories')->where('id',$repos_id)->get('repos_name');
     // $name=$name[0]->repos_name;
-    // dd($name);
-
-    $resJsonCommits=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/commits", null, ['Authorization: Bearer ' . $access_token]);
+    // dd($name[0]->repos_name);
+    // dd($user_inf);
+    $resJsonCommits=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/commits", null, ['Authorization: Bearer ' . $access_token]);
 
     //$commit0=$resJsonCommits[0];
     //dd($commit0['node_id']);
@@ -82,10 +83,12 @@ function register_commit($repos_id){
 
 
     foreach($resJsonCommits as $resJsonCommit){
-        $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit['node_id'])->exists();
+        //  dd($resJsonCommit);
+        // dd($resJsonCommit['commit']['message']);
+        $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit["node_id"])->exists();
         if(!($commitIdCheck)){
             // DBにデータがないなら登録              
-            Commit::create(['id'=>$resJsonCommit['id'],'repository_id'=>$id,'sha'=>$resJsonCommit['sha'],'user_id'=>$resJsonCommit['commit']['author']['id'],
+            Commits::create(['id'=>$resJsonCommit['node_id'],'repositories_id'=>$repos_id,'sha'=>$resJsonCommit['sha'],'user_id'=>$resJsonCommit['author']['id'],
             'message'=>$resJsonCommit['commit']['message'],'commit_date'=>fix_timezone($resJsonCommit['commit']['author']['date'])]);
         }else{
             continue;
@@ -98,7 +101,7 @@ function register_commit($repos_id){
 function register_issue($repos_id){
     // 引数のidはrepositoryのidを指定
         // アクセストークン取得
-        $gh_id=DB::table('repositories')->where('id',$id)->get('gh_account_id');
+        $gh_id=DB::table('repositories')->where('id',$repos_id)->get('gh_account_id');
         // dd($gh_id[0]->gh_account_id)
         // stdClassから変数のみを取得して比較
         $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->gh_account_id)->get();
@@ -127,7 +130,7 @@ function register_issue($repos_id){
         // dd($issue0['closed_at']); // close_atはnull
         
         // DB格納
-        foreeach($resJsonIssues as $resJsonIssue){
+        foreach($resJsonIssues as $resJsonIssue){
             $repoIdCheck=DB::table('repositories')->where('id', $id)->exists();
             if(!($repoIdCheck)){
                 Issues::create(['id'=>$resJsonIssue['id'],'repository_id'=>$id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
@@ -151,16 +154,16 @@ function register_issue($repos_id){
         // dd($issue0['issue']['closed_at']);
 
         // DB格納
-        foreeach($resJsonIssues as $resJsonIssue){
+        foreach($resJsonIssues as $resJsonIssue){
             $repoIdCheck=DB::table('repositories')->where('id', $id)->exists();
             if(!($repoIdCheck)){
-                Issues::create(['id'=>$resJsonIssue['issue']['id']'repository_id'=>$id,'title'=>$resJsonIssue['issue']['title'],'body'=>$resJsonIssue['issue']['body'],
+                Issues::create(['id'=>$resJsonIssue['issue']['id'],'repository_id'=>$id,'title'=>$resJsonIssue['issue']['title'],'body'=>$resJsonIssue['issue']['body'],
             'user_id'=>$resJsonIssue['id'],'close_flag'=>0,'open_at'=>fix_timezone($resJsonIssue['issue']['created_at']),'close_at'=>fix_timezone($resJsonIssue['issue']['closed_at'])]);
             }else{
                 // idが等しいclosed_flagが1ならば0に変える
                 $flag=DB::table('issues')->where('id', $resJsonIssue['issue']['id'])->get('close_flag');
                 if($flag == 1){
-                    Issues::update(['close_flag'=>0], 'close_at'=>fix_timezone($resJsonIssue['issue']['closed_at']));
+                    Issues::update([['close_flag'=>0], 'close_at'=>fix_timezone($resJsonIssue['issue']['closed_at'])]);
                 }else{
                     continue;
                 }
@@ -168,7 +171,7 @@ function register_issue($repos_id){
         }
 }
 
-class IssueController extends Controller
+class DetailController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -210,7 +213,7 @@ class IssueController extends Controller
     public function show($id)
     {
         // commitの登録
-        register_commit($repos_id);
+        register_commit($id);
         // issueの登録
         register_issue($id);
     }
