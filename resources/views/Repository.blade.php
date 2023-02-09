@@ -12,7 +12,7 @@
                     @foreach ($repositories as $repository)
                         <ul>
                             <li>
-                                {{ $repository->repos_name }}
+                                <a>{{ $repository->repos_name }}</a>
                             </li>
                         </ul>
                     @endforeach
