@@ -14,10 +14,10 @@ return new class extends Migration
     public function up()
     {
         Schema::create('repositories', function (Blueprint $table) {
-            $table->integer('id');
-            $table->integer('gh_account_id');
+            $table->integer('id')->primary();
             $table->string('repos_name');
             $table->integer('owner_id');
+            $table->foreign('owner_id')->references('id')->on('gh_profiles')->cascadeOnDelete();
             $table->string('owner_name');
             $table->timestamp('created_date');
             $table->timestamps();
@@ -32,5 +32,7 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists('repositories');
+        $table->dropForeign(['owner_id']);
+        $table->dropColumn(['owner_id']);
     }
 };
