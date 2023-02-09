@@ -240,7 +240,7 @@ class GithubController extends Controller
         $repositories=DB::table('repositories')->where('owner_id',$gh_id[0]->id)->get();
         // dd($repositories);
 // リポジトリの更新があったら、データを取得
-        gh_pullreqest(530597634,111882261);
+        //gh_pullreqest(530597634,111882261);
 
         return view ('Repository',['repositories'=>$repositories]);
 

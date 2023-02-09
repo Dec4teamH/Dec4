@@ -101,18 +101,19 @@ function register_commit($repos_id){
 function register_issue($repos_id){
     // 引数のidはrepositoryのidを指定
         // アクセストークン取得
-        $gh_id=DB::table('repositories')->where('id',$repos_id)->get('gh_account_id');
-        // dd($gh_id[0]->gh_account_id)
+        // valueで値のみ取得
+        $gh_id=DB::table('repositories')->where('id',$repos_id)->value('owner_id');
+        // dd($gh_id);
         // stdClassから変数のみを取得して比較
-        $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->gh_account_id)->get();
+        $user_inf=DB::table('gh_profiles')->where('id',$gh_id)->get();
         $user_name=$user_inf[0]->acunt_name;
         $access_token=$user_inf[0]->access_token;
         // dd($user_name);
         // dd($access_token);
 
         // repositoryの名前を取得
-        $name=DB::table('repositories')->where('id',$id)->get('repos_name');
-        $name=$name[0]->repos_name;
+        $name=DB::table('repositories')->where('id',$repos_id)->value('repos_name');
+        // $name=$name[0]->repos_name;
         // dd($name);
 
         // openとcloseで処理を分ける
@@ -125,48 +126,42 @@ function register_issue($repos_id){
         // dd($issue0['title']); //title
         // dd($issue0['body']); // body
         // dd($issue0['user']['id']); // user_id(ユーザーのgithubid)
-        // dd($issue0['state']); // close_flag-> openなのでtrue(1)を代入
+        // dd($issue0['state']); // close_flag-> openなのでfalse(0)を代入
         // dd($issue0['created_at']); // open_at-> fix_timezoneで変換する
         // dd($issue0['closed_at']); // close_atはnull
         
         // DB格納
         foreach($resJsonIssues as $resJsonIssue){
-            $repoIdCheck=DB::table('repositories')->where('id', $id)->exists();
-            if(!($repoIdCheck)){
-                Issues::create(['id'=>$resJsonIssue['id'],'repository_id'=>$id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
-            'user_id'=>$resJsonIssue['user']['id'],'close_flag'=>1,'open_at'=>fix_timezone($resJsonIssue['created_at'])]);
+            $issueIdCheck=DB::table('issues')->where('id', $resJsonIssue['id'])->exists();
+            if(!($issueIdCheck)){
+                Issues::create(['id'=>$resJsonIssue['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
+            'user_id'=>$resJsonIssue['user']['id'],'close_flag'=>0,'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
             }else{
                 continue;
             }
         }  
 
         // close用の処理
-        $resJsonIssues2=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues/events", null, ['Authorization: Bearer ' . $access_token]);
+        $resJsonIssues2=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues?state=closed", null, ['Authorization: Bearer ' . $access_token]);
         // dd($resJsonIssues2);
-        // $issue0=$resJsonIssues2[0];
+        $issue0=$resJsonIssues2[0];
         // dd($issue0);
         // dd($issue0['issue']['id']);
         // dd($issue0['issue']['title']);
         // dd($issue0['issue']['body']);
-        // dd($issue0['id']);
+        // dd($issue0['issue']['user']['id']);
         // dd($issue0['issue']['state']);
         // dd($issue0['issue']['created_at']);
         // dd($issue0['issue']['closed_at']);
 
         // DB格納
-        foreach($resJsonIssues as $resJsonIssue){
-            $repoIdCheck=DB::table('repositories')->where('id', $id)->exists();
-            if(!($repoIdCheck)){
-                Issues::create(['id'=>$resJsonIssue['issue']['id'],'repository_id'=>$id,'title'=>$resJsonIssue['issue']['title'],'body'=>$resJsonIssue['issue']['body'],
-            'user_id'=>$resJsonIssue['id'],'close_flag'=>0,'open_at'=>fix_timezone($resJsonIssue['issue']['created_at']),'close_at'=>fix_timezone($resJsonIssue['issue']['closed_at'])]);
+        foreach($resJsonIssues2 as $resJsonIssue2){
+            $issueIdCheck2=DB::table('issues')->where('id', $resJsonIssue2['id'])->exists();
+            if(!($issueIdCheck2)){
+                Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
+            'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
             }else{
-                // idが等しいclosed_flagが1ならば0に変える
-                $flag=DB::table('issues')->where('id', $resJsonIssue['issue']['id'])->get('close_flag');
-                if($flag == 1){
-                    Issues::update([['close_flag'=>0], 'close_at'=>fix_timezone($resJsonIssue['issue']['closed_at'])]);
-                }else{
-                    continue;
-                }
+                continue;
             }
         }
 }
@@ -213,9 +208,11 @@ class DetailController extends Controller
     public function show($id)
     {
         // commitの登録
-        register_commit($id);
+        // register_commit($id);
         // issueの登録
         register_issue($id);
+
+        return view('test');
     }
 
     /**
