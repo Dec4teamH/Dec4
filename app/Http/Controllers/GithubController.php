@@ -131,7 +131,7 @@ function gh_pullreqest($repos_id,$gh_user_id){
         // DB格納
         // dd($resJsonPullreq['id']);
         if(!($pullreqIdCheck)){
-        $result=Pullrequests::create(['id'=>$resJsonPullreq["id"],'repos_id'=>$repos_id,'title'=>$resJsonPullreq["title"],'body'=>$resJsonPullreq["body"],
+        $result=Pullrequests::create(['id'=>$resJsonPullreq["id"],'repositories_id'=>$repos_id,'title'=>$resJsonPullreq["title"],'body'=>$resJsonPullreq["body"],
         'close_flag'=>tell_close_flag($resJsonPullreq["state"]),'user_id'=>$access_token->id,'open_date'=>fix_timezone($resJsonPullreq["created_at"]),'close_date'=>fix_timezone($resJsonPullreq["closed_at"]),'merged_at'=>fix_timezone($resJsonPullreq["merged_at"])]);
         }
         // closed_at,merged_atの処理をelseでかく
