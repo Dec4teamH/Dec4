@@ -57,6 +57,53 @@ function httpRequest($curlType, $url, $params = null, $header = null){
     return $Output;
 }
 
+function event_getter($repos_id,$get_id){
+    // 引数のidはreositoryのidを指定
+    // $get_id=0で commitを返す
+    // $get_id=1でissuesを返す
+    // $get_id=2でpullreqを返す
+    $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
+    $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->owner_id)->get();
+    $user_name=$user_inf[0]->acunt_name;
+    $access_token=$user_inf[0]->access_token;
+// repositoryの名前を取得
+    $name=DB::table('repositories')->where('id',$repos_id)->get('repos_name');
+    // eventをとる
+    $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events", null, ['Authorization: Bearer ' . $access_token]);
+    // dd($events);
+    $Commit_event=array();
+        $Issues_event=array();
+        $Pullreq_event=array();
+    foreach ($events as $event){
+        // dd($event["type"]);
+        // commit
+        
+        if($event["type"]=="PushEvent"){
+            // dd($event);
+            $Commit_event[]=$event;
+        }
+        // issue
+        else if ($event["type"]=="IssuesEvent"){
+            // dd($event);
+            $Issues_event[]=$event;
+        }
+        // pullreq
+        else if ($event["type"]=="PullRequestEvent"){
+            // dd($event);
+            $Pullreq_event[]=$event;
+        }
+        else{
+            dd($event);
+        }
+    }
+    if($get_id===0){return  $Commit_event;}
+    else if($get_id===1){return $Issues_event;}
+    else if($get_id===2){return $Pullreq_event;}
+    else{return;}
+}
+
+
+
 // commitの登録
 function register_commit($repos_id){
     // 引数のidはreositoryのidを指定
@@ -253,6 +300,7 @@ class DetailController extends Controller
         // pullrequestの登録
         gh_pullreqest($id);
         // issueの登録
+        // dd(event_getter($id,0));
         register_issue($id);
     }
 
