@@ -8,6 +8,7 @@ use App\Models\Gh_accounts;
 use App\Models\Repositories;
 use App\Models\Issues;
 use App\Models\Commits;
+use App\Models\Pullrequests;
 use Dotenv\Validator as DotenvValidator;
 use App\Models\User;
 use Auth;
@@ -23,7 +24,9 @@ function fix_timezone($datetime){
     $hour=mb_substr($datetime,11,2);
     $min=mb_substr($datetime,14,2);
     $sec=mb_substr($datetime,17,2);
+    
     $fixed_time=$year."-".$month."-".$day." ".$hour.":".$min.":".$sec;
+    if($fixed_time=="-- ::"){return null;}
     return $fixed_time;
 }
 
@@ -95,6 +98,39 @@ function register_commit($repos_id){
         }
     }
 
+}
+
+function tell_close_flag($close_flag){
+    if($close_flag=='open'){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+// pullrequest情報をDBに登録
+function gh_pullreqest($repos_id){
+    $repos_name=DB::table('repositories')->where('id',$repos_id)->first();
+    $gh_user_id=$repos_name->owner_id;
+    // dd($repos_name->repos_name);
+    $access_token=DB::table('gh_profiles')->where('id',$gh_user_id)->first();
+    // dd($access_token->access_token);
+    // dd($access_token->acunt_name);
+    // github apiでpullrequestデータを取得
+    $resJsonPullreqs=httpRequest('get', "https://api.github.com/repos/".$access_token->acunt_name."/".$repos_name->repos_name."/"."pulls", null, ['Authorization: Bearer ' . $access_token->access_token]);
+    // dd($resJsonPullreqs);
+    // DBに格納
+    foreach($resJsonPullreqs as $resJsonPullreq){
+        $pullreqIdCheck=DB::table('pullrequests')->where('id', $resJsonPullreq['id'])->exists();
+        // DB格納
+        // dd($resJsonPullreq['id']);
+        if(!($pullreqIdCheck)){
+            // dd(fix_timezone($resJsonPullreq["closed_at"]));
+        $result=Pullrequests::create(['id'=>$resJsonPullreq["id"],'repositories_id'=>$repos_id,'title'=>$resJsonPullreq["title"],'body'=>$resJsonPullreq["body"],
+        'close_flag'=>tell_close_flag($resJsonPullreq["state"]),'user_id'=>$access_token->id,'open_date'=>fix_timezone($resJsonPullreq["created_at"]),'close_date'=>fix_timezone($resJsonPullreq["closed_at"]),'merged_at'=>fix_timezone($resJsonPullreq["merged_at"])]);
+        }
+        // closed_at,merged_atの処理をelseでかく
+    }
 }
 
 // issueの登録
@@ -214,6 +250,8 @@ class DetailController extends Controller
     {
         // commitの登録
         register_commit($id);
+        // pullrequestの登録
+        gh_pullreqest($id);
         // issueの登録
         register_issue($id);
     }
