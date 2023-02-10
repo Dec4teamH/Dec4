@@ -6,7 +6,7 @@ use Validator;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
 use App\Models\Repositories;
-use App\Models\Pullrequests;
+
 use Dotenv\Validator as DotenvValidator;
 use App\Models\User;
 use Auth;
@@ -110,39 +110,6 @@ function gh_repository($access_token){
 }
 }
 
-function tell_close_flag($close_flag){
-    if($close_flag=='open'){
-        return true;
-    }
-    else{
-        return false;
-    }
-}
-// pullrequest情報をDBに登録
-function gh_pullreqest($repos_id,$gh_user_id){
-    $repos_name=DB::table('repositories')->where('id',$repos_id)->first();
-    // dd($repos_name->repos_name);
-    $access_token=DB::table('gh_profiles')->where('id',$gh_user_id)->first();
-    // dd($access_token->access_token);
-    // dd($access_token->acunt_name);
-    // github apiでpullrequestデータを取得
-    $resJsonPullreqs=httpRequest('get', "https://api.github.com/repos/".$access_token->acunt_name."/".$repos_name->repos_name."/"."pulls", null, ['Authorization: Bearer ' . $access_token->access_token]);
-    // dd($resJsonPullreqs);
-    // DBに格納
-    foreach($resJsonPullreqs as $resJsonPullreq){
-        $pullreqIdCheck=DB::table('pullrequests')->where('id', $resJsonPullreq['id'])->exists();
-        // DB格納
-        // dd($resJsonPullreq['id']);
-        if(!($pullreqIdCheck)){
-        $result=Pullrequests::create(['id'=>$resJsonPullreq["id"],'repositories_id'=>$repos_id,'title'=>$resJsonPullreq["title"],'body'=>$resJsonPullreq["body"],
-        'close_flag'=>tell_close_flag($resJsonPullreq["state"]),'user_id'=>$access_token->id,'open_date'=>fix_timezone($resJsonPullreq["created_at"]),'close_date'=>fix_timezone($resJsonPullreq["closed_at"]),'merged_at'=>fix_timezone($resJsonPullreq["merged_at"])]);
-        }
-        // closed_at,merged_atの処理をelseでかく
-    }
-}
-
-
-
 class GithubController extends Controller
 {
     /**
@@ -240,7 +207,6 @@ class GithubController extends Controller
         $repositories=DB::table('repositories')->where('owner_id',$gh_id[0]->id)->get();
         // dd($repositories);
 // リポジトリの更新があったら、データを取得
-        //gh_pullreqest(530597634,111882261);
 
         return view ('Repository',['repositories'=>$repositories]);
 
