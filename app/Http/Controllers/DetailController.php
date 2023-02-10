@@ -72,8 +72,8 @@ function event_getter($repos_id,$get_id){
     $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events", null, ['Authorization: Bearer ' . $access_token]);
     // dd($events);
     $Commit_event=array();
-        $Issues_event=array();
-        $Pullreq_event=array();
+    $Issues_event=array();
+    $Pullreq_event=array();
     foreach ($events as $event){
         // dd($event["type"]);
         // commit
@@ -182,6 +182,7 @@ function gh_pullreqest($repos_id){
                 'merge_date'=>fix_timezone($pullrequest["merged_at"])
             ]);
         }
+    }
 }
 
 // issueの登録
