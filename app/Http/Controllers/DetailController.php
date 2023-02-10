@@ -57,6 +57,53 @@ function httpRequest($curlType, $url, $params = null, $header = null){
     return $Output;
 }
 
+function event_getter($repos_id,$get_id){
+    // 引数のidはreositoryのidを指定
+    // $get_id=0で commitを返す
+    // $get_id=1でissuesを返す
+    // $get_id=2でpullreqを返す
+    $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
+    $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->owner_id)->get();
+    $user_name=$user_inf[0]->acunt_name;
+    $access_token=$user_inf[0]->access_token;
+// repositoryの名前を取得
+    $name=DB::table('repositories')->where('id',$repos_id)->get('repos_name');
+    // eventをとる
+    $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events", null, ['Authorization: Bearer ' . $access_token]);
+    // dd($events);
+    $Commit_event=array();
+        $Issues_event=array();
+        $Pullreq_event=array();
+    foreach ($events as $event){
+        // dd($event["type"]);
+        // commit
+        
+        if($event["type"]=="PushEvent"){
+            // dd($event);
+            $Commit_event[]=$event;
+        }
+        // issue
+        else if ($event["type"]=="IssuesEvent"){
+            // dd($event);
+            $Issues_event[]=$event;
+        }
+        // pullreq
+        else if ($event["type"]=="PullRequestEvent"){
+            // dd($event);
+            $Pullreq_event[]=$event;
+        }
+        else{
+            dd($event);
+        }
+    }
+    if($get_id===0){return  array_reverse($Commit_event);}
+    else if($get_id===1){return array_reverse($Issues_event);}
+    else if($get_id===2){return array_reverse($Pullreq_event);}
+    else{return;}
+}
+
+
+
 // commitの登録
 function register_commit($repos_id){
     // 引数のidはreositoryのidを指定
@@ -101,7 +148,7 @@ function register_commit($repos_id){
 }
 
 function tell_close_flag($close_flag){
-    if($close_flag=='open'){
+    if($close_flag=='open'&&$close_flag=="reopend"){
         return true;
     }
     else{
@@ -110,27 +157,31 @@ function tell_close_flag($close_flag){
 }
 // pullrequest情報をDBに登録
 function gh_pullreqest($repos_id){
-    $repos_name=DB::table('repositories')->where('id',$repos_id)->first();
-    $gh_user_id=$repos_name->owner_id;
-    // dd($repos_name->repos_name);
-    $access_token=DB::table('gh_profiles')->where('id',$gh_user_id)->first();
-    // dd($access_token->access_token);
-    // dd($access_token->acunt_name);
-    // github apiでpullrequestデータを取得
-    $resJsonPullreqs=httpRequest('get', "https://api.github.com/repos/".$access_token->acunt_name."/".$repos_name->repos_name."/"."pulls", null, ['Authorization: Bearer ' . $access_token->access_token]);
-    // dd($resJsonPullreqs);
+    $Pullreqevents=event_getter($repos_id,2);
     // DBに格納
-    foreach($resJsonPullreqs as $resJsonPullreq){
-        $pullreqIdCheck=DB::table('pullrequests')->where('id', $resJsonPullreq['id'])->exists();
+    // dd($Pullreqevents);
+    foreach($Pullreqevents as $Pullreq_event){
+        $pullrequest=$Pullreq_event["payload"]["pull_request"];
+        $pullreqIdCheck=DB::table('pullrequests')->where('id', $pullrequest['id'])->exists();
         // DB格納
-        // dd($resJsonPullreq['id']);
+        // dd($Pullreq_event["payload"]["pull_request"]);
+        
         if(!($pullreqIdCheck)){
-            // dd(fix_timezone($resJsonPullreq["closed_at"]));
-        $result=Pullrequests::create(['id'=>$resJsonPullreq["id"],'repositories_id'=>$repos_id,'title'=>$resJsonPullreq["title"],'body'=>$resJsonPullreq["body"],
-        'close_flag'=>tell_close_flag($resJsonPullreq["state"]),'user_id'=>$access_token->id,'open_date'=>fix_timezone($resJsonPullreq["created_at"]),'close_date'=>fix_timezone($resJsonPullreq["closed_at"]),'merged_at'=>fix_timezone($resJsonPullreq["merged_at"])]);
+            // dd(fix_timezone($Pullreq_event["closed_at"]));
+        $result=Pullrequests::create(['id'=>$pullrequest["id"],'repositories_id'=>$repos_id,'title'=>$pullrequest["title"],'body'=>$pullrequest["body"],
+        'close_flag'=>tell_close_flag($pullrequest["state"]),'user_id'=>$access_token->id,'open_date'=>fix_timezone($pullrequest["created_at"]),'close_date'=>fix_timezone($pullrequest["closed_at"]),'merged_at'=>fix_timezone($pullrequest["merged_at"])]);
         }
-        // closed_at,merged_atの処理をelseでかく
-    }
+        else{
+            // dd(fix_timezone($pullrequest["closed_at"]));
+            DB::table('pullrequests')
+            ->where('id', $pullrequest['id'])
+            ->update([
+                'close_flag'=>tell_close_flag($pullrequest["state"]),
+                'close_date'=>fix_timezone($pullrequest["closed_at"]),
+                'open_date'=>fix_timezone($pullrequest["created_at"]),
+                'merge_date'=>fix_timezone($pullrequest["merged_at"])
+            ]);
+        }
 }
 
 // issueの登録
@@ -248,6 +299,7 @@ class DetailController extends Controller
         // pullrequestの登録
         gh_pullreqest($id);
         // issueの登録
+        // dd(event_getter($id,2));
         register_issue($id);
 
         return view('test');
