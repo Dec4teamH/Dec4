@@ -93,7 +93,7 @@ function event_getter($repos_id,$get_id){
             $Pullreq_event[]=$event;
         }
         else{
-            dd($event);
+            // dd($event);
         }
     }
     if($get_id===0){return  array_reverse($Commit_event);}
@@ -149,15 +149,17 @@ function register_commit($repos_id){
 
 function tell_close_flag($close_flag){
     if($close_flag=='open'&&$close_flag=="reopend"){
-        return true;
+        return false;
     }
     else{
-        return false;
+        return true;
     }
 }
 // pullrequest情報をDBに登録
 function gh_pullreqest($repos_id){
     $Pullreqevents=event_getter($repos_id,2);
+    $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
+    // dd($gh_id[0]->owner_id);
     // DBに格納
     // dd($Pullreqevents);
     foreach($Pullreqevents as $Pullreq_event){
@@ -169,7 +171,7 @@ function gh_pullreqest($repos_id){
         if(!($pullreqIdCheck)){
             // dd(fix_timezone($Pullreq_event["closed_at"]));
         $result=Pullrequests::create(['id'=>$pullrequest["id"],'repositories_id'=>$repos_id,'title'=>$pullrequest["title"],'body'=>$pullrequest["body"],
-        'close_flag'=>tell_close_flag($pullrequest["state"]),'user_id'=>$access_token->id,'open_date'=>fix_timezone($pullrequest["created_at"]),'close_date'=>fix_timezone($pullrequest["closed_at"]),'merged_at'=>fix_timezone($pullrequest["merged_at"])]);
+        'close_flag'=>tell_close_flag($pullrequest["state"]),'user_id'=>$gh_id[0]->owner_id,'open_date'=>fix_timezone($pullrequest["created_at"]),'close_date'=>fix_timezone($pullrequest["closed_at"]),'merged_at'=>fix_timezone($pullrequest["merged_at"])]);
         }
         else{
             // dd(fix_timezone($pullrequest["closed_at"]));
@@ -232,7 +234,7 @@ function register_issue($repos_id){
         // close用の処理
         $resJsonIssues2=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues?state=closed", null, ['Authorization: Bearer ' . $access_token]);
         // dd($resJsonIssues2);
-        $issue0=$resJsonIssues2[0];
+        // $issue0=$resJsonIssues2[0];
         // dd($issue0);
         // dd($issue0['issue']['id']);
         // dd($issue0['issue']['title']);
@@ -300,7 +302,7 @@ class DetailController extends Controller
         // pullrequestの登録
         gh_pullreqest($id);
         // issueの登録
-        // dd(event_getter($id,2));
+        //  dd(event_getter($id,1));
         register_issue($id);
 
         return view('test');
