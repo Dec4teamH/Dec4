@@ -38,7 +38,7 @@
                 // コミットの数（仮置き）
                 const num = 3;
                 // サイクルの状態（仮置き）
-                const cicle_state = "good"
+                const cicle_state = "good";
             </script>
             <script src={{ asset('/js/graph.js') }}></script>
             <script src={{ asset('/js/app.js') }}></script>
