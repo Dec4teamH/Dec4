@@ -69,7 +69,7 @@ function event_getter($repos_id,$get_id){
 // repositoryの名前を取得
     $name=DB::table('repositories')->where('id',$repos_id)->get('repos_name');
     // eventをとる
-    $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events", null, ['Authorization: Bearer ' . $access_token]);
+    $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
     // dd($events);
     $Commit_event=array();
     $Issues_event=array();
@@ -246,10 +246,14 @@ function register_issue($repos_id){
 
         // DB格納
         foreach($resJsonIssues2 as $resJsonIssue2){
-            $issueIdCheck2=DB::table('issues')->where('id', $resJsonIssue2['id'])->exists();
-            if(!($issueIdCheck2)){
-                Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
-            'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
+            if(count($resJsonIssue2) === 28){
+                $issueIdCheck2=DB::table('issues')->where('id', $resJsonIssue2['id'])->exists();
+                if(!($issueIdCheck2)){
+                    Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
+                'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
+                }else{
+                    continue;
+                }
             }else{
                 continue;
             }
@@ -302,7 +306,7 @@ class DetailController extends Controller
         // pullrequestの登録
         gh_pullreqest($id);
         // issueの登録
-        //  dd(event_getter($id,1));
+        // dd(event_getter($id,1));
         register_issue($id);
 
         return view('test');
