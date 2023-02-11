@@ -16,7 +16,7 @@
                         @if ($state === 'commit')
                             <div>
                                 <select id="state" name="selectbox">
-                                    <option value="commit">commit</option>
+                                    <option value="comgit mit">commit</option>
                                     <option value="merge">merge</option>
                                 </select>
                             </div>
