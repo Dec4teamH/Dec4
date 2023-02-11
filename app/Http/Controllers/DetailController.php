@@ -256,6 +256,36 @@ function register_issue($repos_id){
         }
 }
 
+function devide_time($datetime){
+    // dd($datetime);
+    $year=mb_substr($datetime,0,4);
+    $month=mb_substr($datetime,5,2);
+    $day=mb_substr($datetime,8,2);
+    $hour=mb_substr($datetime,11,2);
+    $min=mb_substr($datetime,14,2);
+    $sec=mb_substr($datetime,17,2);
+    $devided_time["year"]=$year;
+    $devided_time["month"]=$month;
+    $devided_time["day"]=$day;
+    $devided_time["hour"]=$hour;
+    $devided_time["min"]=$min;
+    $devided_time["sec"]=$sec;
+    return $devided_time;
+}
+
+function get_commit_data($repos_id){
+    // commitテーブルから取得
+    $commits=DB::table('commits')->where('repositories_id',$repos_id)->get();
+    // dd($commit);
+    // 現在の日時を取得
+    $today = date("Y-m-d H:i:s");
+    // dd($today);
+    $devide_time=devide_time($today);
+    dd($devide_time);
+    $data_count=count($commits);
+    // dd($data_count);
+    return 0;
+}
 class DetailController extends Controller
 {
     /**
@@ -305,7 +335,10 @@ class DetailController extends Controller
         //  dd(event_getter($id,1));
         register_issue($id);
 
-        return view('test');
+        // DB取り出し
+        $data=get_commit_data($id);
+        
+        return view('Gitgraph',["state"=>"commit","data"=>$data]);
     }
 
     /**

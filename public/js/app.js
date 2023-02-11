@@ -9,7 +9,7 @@ function redirectValue(event) {
     if(loc.hash !== '')
         value += loc.hash;
         
-    location.href =value;
+    location.href =local;
 
     //URLの場合はこちら
     //location.href = value;
