@@ -280,10 +280,24 @@ function get_commit_data($repos_id){
     // 現在の日時を取得
     $today = date("Y-m-d H:i:s");
     // dd($today);
-    $devide_time=devide_time($today);
-    dd($devide_time);
-    $data_count=count($commits);
-    // dd($data_count);
+    $devided_time=devide_time($today);
+    // dd($devide_time);
+    $today_commit=array();
+    foreach ($commits as $commit){
+        // dd($commit->created_at);
+        $created_at=devide_time($commit->commit_date);
+        // dd($created_at);
+        if($devided_time['year']===$created_at['year']){
+            if($devided_time['month']===$created_at['month']){
+                if($devided_time['day']===$created_at['day']){
+                    $today_commit[]=$commit;
+                }
+            }
+        }
+    }
+    // dd($today_commit);
+    $data_count=count($today_commit);
+    dd($data_count);
     return 0;
 }
 class DetailController extends Controller
