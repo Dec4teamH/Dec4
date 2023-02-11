@@ -36,7 +36,7 @@
                 // 受け取った変数をjsに渡す
                 const state = `{{ $state }}`;
                 // コミットの数（仮置き）
-                const num = 3;
+                const num = `{{ $data['count'] }}`;
                 // サイクルの状態（仮置き）
                 const cicle_state = "good"
             </script>

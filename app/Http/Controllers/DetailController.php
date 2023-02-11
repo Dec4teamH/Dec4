@@ -297,8 +297,12 @@ function get_commit_data($repos_id){
     }
     // dd($today_commit);
     $data_count=count($today_commit);
-    dd($data_count);
-    return 0;
+    // dd($data_count);
+    // サイクルの状態を判断
+    $cycle['count']=$data_count;
+    $cycle['commit']=$commits;
+    // dd($cycle['count']);
+    return $cycle;
 }
 class DetailController extends Controller
 {
@@ -351,7 +355,7 @@ class DetailController extends Controller
 
         // DB取り出し
         $data=get_commit_data($id);
-        
+
         return view('Gitgraph',["state"=>"commit","data"=>$data]);
     }
 
