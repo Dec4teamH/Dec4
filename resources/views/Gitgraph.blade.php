@@ -30,7 +30,11 @@
                         @endif
                     </div>
                 </div>
-
+            </div>
+            <div>
+                @foreach ($data['commit'] as $commit)
+                    <p>{{ $commit->message }}</p>
+                @endforeach
             </div>
             <script>
                 // 受け取った変数をjsに渡す
