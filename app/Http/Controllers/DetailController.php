@@ -275,8 +275,8 @@ function devide_time($datetime){
 
 function get_commit_data($repos_id){
     // commitテーブルから取得
-    $commits=DB::table('commits')->where('repositories_id',$repos_id)->get();
-    // dd($commit);
+    $commits=DB::table('commits')->where('repositories_id',$repos_id)->orderBy('commit_date',"desc")->get();
+    // dd($commits);
     // 現在の日時を取得
     $today = date("Y-m-d H:i:s");
     // dd($today);
