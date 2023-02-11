@@ -12,7 +12,8 @@
                     @foreach ($repositories as $repository)
                         <ul>
                             <li>
-                                {{ $repository->repos_name }}
+                                <a href="{{ route('detail.show', $repository->id) }}">{{ $repository->repos_name }}</a>
+
                             </li>
                         </ul>
                     @endforeach

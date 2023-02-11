@@ -6,6 +6,7 @@ use Validator;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
 use App\Models\Repositories;
+
 use Dotenv\Validator as DotenvValidator;
 use App\Models\User;
 use Auth;
@@ -17,6 +18,7 @@ use DB;
 // githubapiから取得したじかんをDBに格納できるtimestampがたに変換
 // 0000-00-00T00:00:00Zを日本時間に直すかは考える
 function fix_timezone($timestamp){
+    if($timestamp!=null){
     $year=mb_substr($timestamp,0,4);
     $month=mb_substr($timestamp,5,2);
     $day=mb_substr($timestamp,8,2);
@@ -25,6 +27,9 @@ function fix_timezone($timestamp){
     $sec=mb_substr($timestamp,17,2);
     $fixed_time=$year."-".$month."-".$day." ".$hour.":".$min.":".$sec;
     return $fixed_time;
+}else{
+    return null;
+}
 }
 
 // curlの情報をjson形式でreturn 
@@ -60,14 +65,16 @@ function httpRequest($curlType, $url, $params = null, $header = null)
 function gh_user($access_token){
 // User情報
         $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
+        //dd($resJsonUser);
         // Gh_ profiles
         // githubのaccountidがテーブルに存在しているのか確認
         $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
         if(!($ghIdCheck)){
             // idが存在しないならDBに追加
             // Gh_account
+                    $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
         $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
-            $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
+    
         }else{
             // idが存在するならDBを上書き
             DB::table('gh_profiles')
@@ -86,6 +93,7 @@ function gh_repository($access_token){
         $user_inf=DB::table('gh_profiles')->where('access_token',$access_token)->get();
         // dd($user_inf);
         $resJsonRepos=httpRequest('get', "https://api.github.com/users/".$user_inf[0]->acunt_name."/repos", null, ['Authorization: Bearer ' . $access_token]);
+        // dd($resJsonRepos);
         //  DB格納
         foreach($resJsonRepos as $resJsonRepo){
             $repoIdCheck=DB::table('repositories')->where('id', $resJsonRepo['id'])->exists();
@@ -101,8 +109,6 @@ function gh_repository($access_token){
             }
 }
 }
-
-
 
 class GithubController extends Controller
 {

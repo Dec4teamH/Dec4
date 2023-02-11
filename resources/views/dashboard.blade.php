@@ -17,7 +17,7 @@
                     @isset($gh_names)
                         @foreach ($gh_names as $gh_name)
                             <ul>
-                                <li><a href={{ route('dashboard.show', $gh_name) }}>{{ $gh_name }}</a></li>
+                                <li><a href="{{ route('dashboard.show', $gh_name) }}">{{ $gh_name }}</a></li>
                             </ul>
                             <!-- 🔽 削除ボタン -->
                             <form action="{{ route('dashboard.destroy',$gh_name) }}" method="POST" class="text-left">

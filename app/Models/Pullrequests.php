@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Pullrequests extends Model
 {
     use HasFactory;
-
     protected $table = 'pullrequests';
     protected $guarded = ['created_at', 'updated_at'];
 
