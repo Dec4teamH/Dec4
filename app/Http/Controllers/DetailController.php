@@ -300,9 +300,23 @@ function get_commit_data($repos_id){
             }
         }
         foreach($pullreqs as $pullreq){
-            if($pullreq->merge_date===$commit->commit_date){
+            $merge_date=devide_time($pullreq->merge_date);
+            $commit_time=devide_time($commit->commit_date);
+            // dd(abs($merge_date['sec']-$commit_time['sec']));
+            if($merge_date['year']===$commit_time['year'])
+            {
+                if($merge_date['month']===$commit_time['month']){
+                    if($merge_date['day']===$commit_time['day']){
+                        if($merge_date['hour']===$commit_time['hour']){
+                            if($merge_date['min']===$commit_time['min']){
+                                if(abs($merge_date['sec']-$commit_time['sec'])<3){
+                                    $merges[]=$commit;
+                                }
+                            }
+                        }
+                    }
+                }
                 // dd($commit);
-                $merges[]=$commit;
             }
         } 
     }

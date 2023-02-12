@@ -30,28 +30,36 @@
                         @endif
                     </div>
                 </div>
-            </div>
-            <div>
-                @foreach ($data['commit'] as $commit)
+                <div>
                     @php
-                        $url = 'https://github.com/' . $data['user']->owner_name . '/' . $data['user']->repos_name . '/commit/' . $commit->sha;
+                        $i = 0;
                     @endphp
-                    @foreach ($data['merge'] as $merge)
-                        @if ($merge === $commit)
-                            <a href={{ $url }} class="bg-black text-white">
-                                <p>{{ $commit->message }}</p>
-                            </a>
-                        @endif
-                    @endforeach
-                    @foreach ($data['merge'] as $merge)
-                        @if ($merge != $commit)
+                    @foreach ($data['commit'] as $commit)
+                        @php
+                            $url = 'https://github.com/' . $data['user']->owner_name . '/' . $data['user']->repos_name . '/commit/' . $commit->sha;
+                        @endphp
+                        @if (array_key_exists(0 + $i, $data['merge']))
+                            @if ($data['merge'][0 + $i] === $commit)
+                                @php
+                                    $i++;
+                                @endphp
+                                <a href={{ $url }} class="text-red-500">
+                                    <p>{{ $commit->message }}</p>
+                                </a>
+                            @else
+                                <a href={{ $url }}>
+                                    <p>{{ $commit->message }}</p>
+                                </a>
+                            @endif
+                        @else
                             <a href={{ $url }}>
                                 <p>{{ $commit->message }}</p>
                             </a>
                         @endif
                     @endforeach
-                @endforeach
+                </div>
             </div>
+
             <script>
                 // 受け取った変数をjsに渡す
                 const state = `{{ $state }}`;
