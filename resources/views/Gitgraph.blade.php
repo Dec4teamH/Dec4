@@ -33,7 +33,12 @@
             </div>
             <div>
                 @foreach ($data['commit'] as $commit)
-                    <p>{{ $commit->message }}</p>
+                    @php
+                        $url = 'https://github.com/' . $data['user']->owner_name . '/' . $data['user']->repos_name . '/commit/' . $commit->sha;
+                    @endphp
+                    <a href={{ $url }}>
+                        <p>{{ $commit->message }}</p>
+                    </a>
                 @endforeach
             </div>
             <script>

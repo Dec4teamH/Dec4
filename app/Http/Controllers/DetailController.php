@@ -277,6 +277,8 @@ function get_commit_data($repos_id){
     // commitテーブルから取得
     $commits=DB::table('commits')->where('repositories_id',$repos_id)->orderBy('commit_date',"desc")->get();
     // dd($commits);
+    $gh_user=DB::table('repositories')->where('id',$repos_id)->first();
+    // dd($gh_user);
     // 現在の日時を取得
     $today = date("Y-m-d H:i:s");
     // dd($today);
@@ -301,6 +303,7 @@ function get_commit_data($repos_id){
     // サイクルの状態を判断
     $cycle['count']=$data_count;
     $cycle['commit']=$commits;
+    $cycle['user']=$gh_user;
     // dd($cycle['count']);
     return $cycle;
 }
