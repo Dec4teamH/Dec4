@@ -279,12 +279,15 @@ function get_commit_data($repos_id){
     // dd($commits);
     $gh_user=DB::table('repositories')->where('id',$repos_id)->first();
     // dd($gh_user);
+    $pullreqs=DB::table('pullrequests')->where('repositories_id',$repos_id)->orderby("merge_date","asc")->get();
+    // dd($pullreqs);
     // 現在の日時を取得
     $today = date("Y-m-d H:i:s");
     // dd($today);
     $devided_time=devide_time($today);
     // dd($devide_time);
     $today_commit=array();
+    $merges=array();
     foreach ($commits as $commit){
         // dd($commit->created_at);
         $created_at=devide_time($commit->commit_date);
@@ -296,11 +299,19 @@ function get_commit_data($repos_id){
                 }
             }
         }
+        foreach($pullreqs as $pullreq){
+            if($pullreq->merge_date===$commit->commit_date){
+                // dd($commit);
+                $merges[]=$commit;
+            }
+        } 
     }
+    // dd($merges);
     // dd($today_commit);
     $data_count=count($today_commit);
     // dd($data_count);
     // サイクルの状態を判断
+    $cycle['merge']=$merges;
     $cycle['count']=$data_count;
     $cycle['commit']=$commits;
     $cycle['user']=$gh_user;

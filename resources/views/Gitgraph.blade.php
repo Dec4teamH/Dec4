@@ -36,9 +36,20 @@
                     @php
                         $url = 'https://github.com/' . $data['user']->owner_name . '/' . $data['user']->repos_name . '/commit/' . $commit->sha;
                     @endphp
-                    <a href={{ $url }}>
-                        <p>{{ $commit->message }}</p>
-                    </a>
+                    @foreach ($data['merge'] as $merge)
+                        @if ($merge === $commit)
+                            <a href={{ $url }} class="bg-black text-white">
+                                <p>{{ $commit->message }}</p>
+                            </a>
+                        @endif
+                    @endforeach
+                    @foreach ($data['merge'] as $merge)
+                        @if ($merge != $commit)
+                            <a href={{ $url }}>
+                                <p>{{ $commit->message }}</p>
+                            </a>
+                        @endif
+                    @endforeach
                 @endforeach
             </div>
             <script>
