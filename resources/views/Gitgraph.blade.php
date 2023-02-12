@@ -16,7 +16,7 @@
                         @if ($state === 'commit')
                             <div>
                                 <select id="state" name="selectbox">
-                                    <option value="commit">commit</option>
+                                    <option value="comgit mit">commit</option>
                                     <option value="merge">merge</option>
                                 </select>
                             </div>
@@ -30,13 +30,41 @@
                         @endif
                     </div>
                 </div>
-
+                <div>
+                    @php
+                        $i = 0;
+                    @endphp
+                    @foreach ($data['commit'] as $commit)
+                        @php
+                            $url = 'https://github.com/' . $data['user']->owner_name . '/' . $data['user']->repos_name . '/commit/' . $commit->sha;
+                        @endphp
+                        @if (array_key_exists(0 + $i, $data['merge']))
+                            @if ($data['merge'][0 + $i] === $commit)
+                                @php
+                                    $i++;
+                                @endphp
+                                <a href={{ $url }} class="text-red-500">
+                                    <p>{{ $commit->message }}</p>
+                                </a>
+                            @else
+                                <a href={{ $url }}>
+                                    <p>{{ $commit->message }}</p>
+                                </a>
+                            @endif
+                        @else
+                            <a href={{ $url }}>
+                                <p>{{ $commit->message }}</p>
+                            </a>
+                        @endif
+                    @endforeach
+                </div>
             </div>
+
             <script>
                 // 受け取った変数をjsに渡す
                 const state = `{{ $state }}`;
                 // コミットの数（仮置き）
-                const num = 3;
+                const num = `{{ $data['count'] }}`;
                 // サイクルの状態（仮置き）
                 const cicle_state = "good";
             </script>

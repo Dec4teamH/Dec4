@@ -260,6 +260,82 @@ function register_issue($repos_id){
         }
 }
 
+function devide_time($datetime){
+    // dd($datetime);
+    $year=mb_substr($datetime,0,4);
+    $month=mb_substr($datetime,5,2);
+    $day=mb_substr($datetime,8,2);
+    $hour=mb_substr($datetime,11,2);
+    $min=mb_substr($datetime,14,2);
+    $sec=mb_substr($datetime,17,2);
+    $devided_time["year"]=$year;
+    $devided_time["month"]=$month;
+    $devided_time["day"]=$day;
+    $devided_time["hour"]=$hour;
+    $devided_time["min"]=$min;
+    $devided_time["sec"]=$sec;
+    return $devided_time;
+}
+
+function get_commit_data($repos_id){
+    // commitテーブルから取得
+    $commits=DB::table('commits')->where('repositories_id',$repos_id)->orderBy('commit_date',"desc")->get();
+    // dd($commits);
+    $gh_user=DB::table('repositories')->where('id',$repos_id)->first();
+    // dd($gh_user);
+    $pullreqs=DB::table('pullrequests')->where('repositories_id',$repos_id)->orderby("merge_date","asc")->get();
+    // dd($pullreqs);
+    // 現在の日時を取得
+    $today = date("Y-m-d H:i:s");
+    // dd($today);
+    $devided_time=devide_time($today);
+    // dd($devide_time);
+    $today_commit=array();
+    $merges=array();
+    foreach ($commits as $commit){
+        // dd($commit->created_at);
+        $created_at=devide_time($commit->commit_date);
+        // dd($created_at);
+        if($devided_time['year']===$created_at['year']){
+            if($devided_time['month']===$created_at['month']){
+                if($devided_time['day']===$created_at['day']){
+                    $today_commit[]=$commit;
+                }
+            }
+        }
+        foreach($pullreqs as $pullreq){
+            $merge_date=devide_time($pullreq->merge_date);
+            $commit_time=devide_time($commit->commit_date);
+            // dd(abs($merge_date['sec']-$commit_time['sec']));
+            if($merge_date['year']===$commit_time['year'])
+            {
+                if($merge_date['month']===$commit_time['month']){
+                    if($merge_date['day']===$commit_time['day']){
+                        if($merge_date['hour']===$commit_time['hour']){
+                            if($merge_date['min']===$commit_time['min']){
+                                if(abs($merge_date['sec']-$commit_time['sec'])<3){
+                                    $merges[]=$commit;
+                                }
+                            }
+                        }
+                    }
+                }
+                // dd($commit);
+            }
+        } 
+    }
+    // dd($merges);
+    // dd($today_commit);
+    $data_count=count($today_commit);
+    // dd($data_count);
+    // サイクルの状態を判断
+    $cycle['merge']=$merges;
+    $cycle['count']=$data_count;
+    $cycle['commit']=$commits;
+    $cycle['user']=$gh_user;
+    // dd($cycle['count']);
+    return $cycle;
+}
 class DetailController extends Controller
 {
     /**
@@ -309,7 +385,10 @@ class DetailController extends Controller
         // dd(event_getter($id,1));
         register_issue($id);
 
-        return view('test');
+        // DB取り出し
+        $data=get_commit_data($id);
+
+        return view('Gitgraph',["state"=>"commit","data"=>$data]);
     }
 
     /**
