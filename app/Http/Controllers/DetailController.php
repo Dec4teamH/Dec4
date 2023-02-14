@@ -122,7 +122,7 @@ function register_commit($repos_id){
     // $name=$name[0]->repos_name;
     // dd($name[0]->repos_name);
     // dd($user_inf);
-    $resJsonCommits=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/commits", null, ['Authorization: Bearer ' . $access_token]);
+    $resJsonCommits=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/commits?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
 
     //$commit0=$resJsonCommits[0];
     //dd($commit0['node_id']);
@@ -208,7 +208,7 @@ function register_issue($repos_id){
 
         // openとcloseで処理を分ける
         // open用の処理
-        $resJsonIssues=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues", null, ['Authorization: Bearer ' . $access_token]);
+        $resJsonIssues=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
         // dd($resJsonIssues);
         // $issue0=$resJsonIssues[0];
         // dd($issue0['id']); //id
@@ -232,7 +232,7 @@ function register_issue($repos_id){
         }  
 
         // close用の処理
-        $resJsonIssues2=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues?state=closed", null, ['Authorization: Bearer ' . $access_token]);
+        $resJsonIssues2=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues?state=closed&per_page=100", null, ['Authorization: Bearer ' . $access_token]);
         // dd($resJsonIssues2);
         // $issue0=$resJsonIssues2[0];
         // dd($issue0);
