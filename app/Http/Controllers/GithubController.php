@@ -232,16 +232,11 @@ class GithubController extends Controller
         // 名前からuser_profを取得
         $gh_id=DB::table('gh_profiles')->where('acunt_name',$id)->get();
         //  dd($gh_id);
+        $gh_profs=DB::table('gh_profiles')->where('access_token',$gh_id[0]->access_token)->where("org",1)->get();
         // gh_idから選択したユーザーのリポジトリ一覧を取得
-        $repositories=DB::table('repositories')->where('owner_id',$gh_id[0]->id)->get();
+        // $repositories=DB::table('repositories')->where('owner_id',$gh_id[0]->id)->get();
         // dd($repositories);
-// リポジトリの更新があったら、データを取得
-
-        return view ('Repository',['repositories'=>$repositories]);
-
-
-
-
+        return view ('organization',["gh_profs"=>$gh_profs]);
     }
 
     /**
