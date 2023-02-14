@@ -72,7 +72,7 @@ function gh_user($access_token){
         if(!($ghIdCheck)){
             // idが存在しないならDBに追加
             // Gh_account
-                    $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token]);
+                    $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token,'org'=>false]);
         $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
     
         }else{
@@ -86,7 +86,31 @@ function gh_user($access_token){
             ]);
         }
 }
-
+// organization情報をDBに登録
+function gh_organization($access_token){
+    // organizationのメンバーズをpublicに変更する
+    $orgs=httpRequest('get', 'https://api.github.com/users/shutouyusei/orgs', null, ['Authorization: Bearer ' . $access_token]);
+    // dd($orgs);
+    foreach ($orgs as $org){
+    $ghIdCheck=DB::table('gh_profiles')->where('id', $org['id'])->exists();
+    if(!($ghIdCheck)){
+           // idが存在しないならDBに追加
+            // Gh_account
+            $result= Gh_profiles::create(['id'=>$org['id'],'acunt_name'=>$org['login'],'access_token'=>$access_token,'org'=>true]);
+        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$org['id']]);
+    
+        }else{
+            // idが存在するならDBを上書き
+            DB::table('gh_profiles')
+            ->where('id',$org['id'])
+            ->update([
+                'id'=>$org['id'],
+                'acunt_name'=>$org['login'],
+                'access_token'=>$access_token
+            ]);
+    }
+}
+}
 // repositry情報をDBに登録
 function gh_repository($access_token){
 //  repos
@@ -126,15 +150,18 @@ class GithubController extends Controller
     // gh_account_idからacunt_nameを持ってくる
     foreach($gh_account_ids as $gh_account_id){
     $gh_prof=Gh_profiles::where('id',$gh_account_id['gh_account_id'])->get();
+    // dd($gh_prof[0]->org);
+    if($gh_prof[0]->org===0){
     $gh_name[]=$gh_prof[0]->acunt_name;
     }
+}
     if(isset($gh_name)) {
         return view('dashboard',["gh_names"=>$gh_name]);
     }
     else{
 //   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
     return view ('dashboard');
-    }
+}
 }
 
     /**
@@ -174,6 +201,8 @@ class GithubController extends Controller
 // email
         $resJsonEmail =httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $access_token]);
 
+// orgs
+        gh_organization($access_token);
 // //  commit
 //         foreach ($resJsonRepos as $resJsonRepo){
 //             $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$access_token ]);

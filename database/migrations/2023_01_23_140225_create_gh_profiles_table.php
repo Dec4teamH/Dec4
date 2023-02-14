@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('id')->primary();
             $table->string('acunt_name');
             $table->string('access_token');
+            $table->boolean('org');
             $table->timestamps();
         });
     }

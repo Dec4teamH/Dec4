@@ -278,6 +278,9 @@ function devide_time($datetime){
 }
 
 function get_commit_data($repos_id){
+    // 現在の日時を取得
+    $today = date("Y-m-d H:i:s");
+    // dd($today);
     // commitテーブルから取得
     $commits=DB::table('commits')->where('repositories_id',$repos_id)->orderBy('commit_date',"desc")->get();
     // dd($commits);
@@ -285,9 +288,7 @@ function get_commit_data($repos_id){
     // dd($gh_user);
     $pullreqs=DB::table('pullrequests')->where('repositories_id',$repos_id)->orderby("merge_date","asc")->get();
     // dd($pullreqs);
-    // 現在の日時を取得
-    $today = date("Y-m-d H:i:s");
-    // dd($today);
+    
     $devided_time=devide_time($today);
     // dd($devide_time);
     $today_commit=array();
@@ -334,6 +335,7 @@ function get_commit_data($repos_id){
     $cycle['commit']=$commits;
     $cycle['user']=$gh_user;
     // dd($cycle['count']);
+    // dd($cycle);
     return $cycle;
 }
 class DetailController extends Controller
