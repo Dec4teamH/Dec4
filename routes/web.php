@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GithubController;
 use App\Http\Controllers\DetailController;
+use App\Http\Controllers\RepositoryController;
+use Illuminate\Cache\Repository;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +32,8 @@ Route::middleware('auth')->group(function () {
 Route::resource('dashboard',GithubController::class)->middleware(['auth', 'verified']);
 
 Route::resource('detail',DetailController::class);
+
+Route::resource('repository',RepositoryController::class);
 
 // graph commit表示のルーテイング
 Route::get('/graph/commit',function(){
