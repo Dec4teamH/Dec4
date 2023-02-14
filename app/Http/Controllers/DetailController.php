@@ -123,7 +123,7 @@ function register_commit($repos_id){
     // dd($name[0]->repos_name);
     // dd($user_inf);
     $resJsonCommits=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/commits?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
-
+    // dd($resJsonCommits);
     //$commit0=$resJsonCommits[0];
     //dd($commit0['node_id']);
     //dd($commit0['commit']['author']['name']);
@@ -133,12 +133,13 @@ function register_commit($repos_id){
 
 
     foreach($resJsonCommits as $resJsonCommit){
-        //  dd($resJsonCommit);
+        $user_id=$resJsonCommit['author']['id'];
+        dd($resJsonCommit);
         // dd($resJsonCommit['commit']['message']);
         $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit["node_id"])->exists();
         if(!($commitIdCheck)){
             // DBにデータがないなら登録              
-            Commits::create(['id'=>$resJsonCommit['node_id'],'repositories_id'=>$repos_id,'sha'=>$resJsonCommit['sha'],'user_id'=>$resJsonCommit['author']['id'],
+            Commits::create(['id'=>$resJsonCommit['node_id'],'repositories_id'=>$repos_id,'sha'=>$resJsonCommit['sha'],'user_id'=>$user_id,
             'message'=>$resJsonCommit['commit']['message'],'commit_date'=>fix_timezone($resJsonCommit['commit']['author']['date'])]);
         }else{
             continue;
@@ -257,6 +258,31 @@ function register_issue($repos_id){
             }else{
                 continue;
             }
+        }
+}
+// ユーザーと登録したgh_accountの関連、gh_accountの情報を取得してDBに登録
+function gh_user($access_token){
+// User情報
+        $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
+        //dd($resJsonUser);
+        // Gh_ profiles
+        // githubのaccountidがテーブルに存在しているのか確認
+        $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
+        if(!($ghIdCheck)){
+            // idが存在しないならDBに追加
+            // Gh_account
+                    $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token,'org'=>false]);
+        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
+    
+        }else{
+            // idが存在するならDBを上書き
+            DB::table('gh_profiles')
+            ->where('id',$resJsonUser['id'])
+            ->update([
+                'id'=>$resJsonUser['id'],
+                'acunt_name'=>$resJsonUser['login'],
+                'access_token'=>$access_token
+            ]);
         }
 }
 
