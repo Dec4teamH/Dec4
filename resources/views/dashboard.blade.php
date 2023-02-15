@@ -19,7 +19,8 @@
                             @foreach ($gh_names as $gh_name)
                                 @if ($gh_name[0]->access_token != null)
                                     <li>
-                                        <a>{{ $gh_name[0]->acunt_name }}</a>
+                                        <a
+                                            href="{{ route('organization.show', $gh_name[0]->id) }}">{{ $gh_name[0]->acunt_name }}</a>
                                     </li>
 
                                     <!-- 🔽 削除ボタン -->

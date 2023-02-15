@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Validator;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
+use App\Models\Organization;
 use App\Models\Repositories;
 
 use Dotenv\Validator as DotenvValidator;
@@ -86,12 +87,44 @@ function gh_user($access_token){
             ]);
         }
 }
+function  gh_member($mem,$access_token){
+    // dd($mem);
+    $url=str_replace("{/member}","",$mem['members_url']);
+    // dd($url);
+    $members=httpRequest('get', $url, null, ['Authorization: Bearer ' . $access_token]);
+    // dd($members);
+    foreach ($members as $member){
+        $ghIdCheck=DB::table('gh_profiles')->where('id', $member['id'])->exists();
+        if(!($ghIdCheck)){
+            // idが存在しないならDBに追加
+            // Gh_account
+                    $result= Gh_profiles::create(['id'=>$member['id'],'acunt_name'=>$member['login'],'access_token'=>null,'org'=>false]);
+        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$member['id']]);
+    
+        }else{
+            // idが存在するならDBを上書き
+            DB::table('gh_profiles')
+            ->where('id',$member['id'])
+            ->update([
+                'id'=>$member['id'],
+                'acunt_name'=>$member['login'],
+            ]);
+        }
+        $orgIdCheck=DB::table('organizations')->where('organization_id',$mem['id'])->where('gh_account_id',$member['id'])->exists();
+        if(!($orgIdCheck)){
+            $result=Organization::create(['organization_id'=>$mem['id'],'gh_account_id'=>$member['id']]);
+        }
+    }
+}
 // organization情報をDBに登録
 function gh_organization($access_token){
     // organizationのメンバーズをpublicに変更する
-    $orgs=httpRequest('get', 'https://api.github.com/users/shutouyusei/orgs', null, ['Authorization: Bearer ' . $access_token]);
+    $acunt_name=DB::table('gh_profiles')->where('access_token',$access_token)->first();
+    // dd($acunt_name->acunt_name);
+    $orgs=httpRequest('get', 'https://api.github.com/users/'.$acunt_name->acunt_name.'/orgs', null, ['Authorization: Bearer ' . $access_token]);
     // dd($orgs);
     foreach ($orgs as $org){
+    gh_member($org,$access_token);
     $ghIdCheck=DB::table('gh_profiles')->where('id', $org['id'])->exists();
     if(!($ghIdCheck)){
            // idが存在しないならDBに追加
@@ -106,7 +139,6 @@ function gh_organization($access_token){
             ->update([
                 'id'=>$org['id'],
                 'acunt_name'=>$org['login'],
-                'access_token'=>$access_token
             ]);
     }
 }
