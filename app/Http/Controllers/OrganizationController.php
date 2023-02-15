@@ -56,7 +56,7 @@ class OrganizationController extends Controller
         }
         // dd($gh_profs);
 
-        return view("organization",["gh_profs"=>$gh_profs]);
+        return view("organization",["gh_profs"=>$gh_profs,"id"=>$id]);
     }
 
     /**

@@ -16,7 +16,7 @@
                                     {{ $gh_prof->acunt_name }}</a>
                             </li>
                         @endforeach
-                        <li><a href="{{ route('repository.show', $gh_prof->id) }}">personal
+                        <li><a href="{{ route('repository.show', $id) }}">personal
                                 repositories</a>
                         </li>
                     </ul>
