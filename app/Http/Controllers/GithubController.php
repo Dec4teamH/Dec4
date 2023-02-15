@@ -235,16 +235,7 @@ class GithubController extends Controller
      */
     public function show($id)
     {
-        // $id=acunt_name
-        // dd($id);
-        // 名前からuser_profを取得
-        $gh_id=DB::table('gh_profiles')->where('acunt_name',$id)->get();
-        //  dd($gh_id);
-        $gh_profs=DB::table('gh_profiles')->where('access_token',$gh_id[0]->access_token)->get();
-        // gh_idから選択したユーザーのリポジトリ一覧を取得
-        // $repositories=DB::table('repositories')->where('owner_id',$gh_id[0]->id)->get();
-        // dd($repositories);
-        return view ('organization',["gh_profs"=>$gh_profs,"id"=>$id]);
+        
     }
 
     /**

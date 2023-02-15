@@ -154,7 +154,7 @@ class RepositoryController extends Controller
         // repository
         gh_repository($id);
         $repositories=DB::table('repositories')->where('owner_id',$id)->get();
-        return view ('Repository',['repositories'=>$repositories]);
+        return view ('Repository',['repositories'=>$repositories,"id"=>$id]);
     }
 
     /**

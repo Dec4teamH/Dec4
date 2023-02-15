@@ -58,6 +58,33 @@ function httpRequest($curlType, $url, $params = null, $header = null){
 }
 
 function event_getter($repos_id,$get_id){
+    $repository=DB::table('repositories')->where("id",$repos_id)->first();
+    $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
+    // dd($org_prof);
+   
+    if($org_prof->access_token!=null){
+         // アクセストークン取得
+    // dd($gh_id[0]->owner_id);
+    // stdClassから変のみを取得して比較
+    $access_token=$org_prof->access_token;
+    // dd($user_name);
+    // dd($access_token);
+    }else{
+    $members=DB::table('organizations')->where('organization_id',$org_prof->id)->get();
+        // dd($members);
+        $mem_profs=array();
+        foreach ($members as $member){
+            $mem_profs[]=DB::table('gh_profiles')->where('id',$member->gh_account_id)->first();
+        }
+        // dd($mem_profs);
+        foreach($mem_profs as $mem_prof){
+            if($mem_prof->access_token!=null){
+                $access_token=$mem_prof->access_token;
+                break;
+            }
+        }    
+}
+// dd($access_token);
     // 引数のidはreositoryのidを指定
     // $get_id=0で commitを返す
     // $get_id=1でissuesを返す
@@ -65,10 +92,12 @@ function event_getter($repos_id,$get_id){
     $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
     $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->owner_id)->get();
     $user_name=$user_inf[0]->acunt_name;
-    $access_token=$user_inf[0]->access_token;
 // repositoryの名前を取得
     $name=DB::table('repositories')->where('id',$repos_id)->get('repos_name');
     // eventをとる
+    // dd($user_name);
+    // dd($name[0]->repos_name);
+    // dd($access_token);
     $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
     // dd($events);
     $Commit_event=array();
@@ -106,17 +135,34 @@ function event_getter($repos_id,$get_id){
 
 // commitの登録
 function register_commit($repos_id){
-    // 引数のidはreositoryのidを指定
-    // アクセストークン取得
-    $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
+
+    $repository=DB::table('repositories')->where("id",$repos_id)->first();
+    $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
+    // dd($org_prof);
+   
+    if($org_prof->access_token!=null){
+         // アクセストークン取得
     // dd($gh_id[0]->owner_id);
-    // stdClassから変数のみを取得して比較
-    $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->owner_id)->get();
-    $user_name=$user_inf[0]->acunt_name;
-    $access_token=$user_inf[0]->access_token;
+    // stdClassから変のみを取得して比較
+    $access_token=$org_prof->access_token;
     // dd($user_name);
     // dd($access_token);
-
+    }else{
+    $members=DB::table('organizations')->where('organization_id',$org_prof->id)->get();
+        // dd($members);
+        $mem_profs=array();
+        foreach ($members as $member){
+            $mem_profs[]=DB::table('gh_profiles')->where('id',$member->gh_account_id)->first();
+        }
+        // dd($mem_profs);
+        foreach($mem_profs as $mem_prof){
+            if($mem_prof->access_token!=null){
+                $access_token=$mem_prof->access_token;
+                break;
+            }
+        }    
+}// 引数のidはreositoryのidを指定
+ $user_name=$org_prof->acunt_name;
     // repositoryの名前を取得
     $name=DB::table('repositories')->where('id',$repos_id)->get('repos_name');
     // $name=$name[0]->repos_name;
@@ -134,7 +180,7 @@ function register_commit($repos_id){
 
     foreach($resJsonCommits as $resJsonCommit){
         $user_id=$resJsonCommit['author']['id'];
-        dd($resJsonCommit);
+        // dd($resJsonCommit);
         // dd($resJsonCommit['commit']['message']);
         $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit["node_id"])->exists();
         if(!($commitIdCheck)){
@@ -190,6 +236,32 @@ function gh_pullreqest($repos_id){
 
 // issueの登録
 function register_issue($repos_id){
+        $repository=DB::table('repositories')->where("id",$repos_id)->first();
+    $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
+    // dd($org_prof);
+   
+    if($org_prof->access_token!=null){
+         // アクセストークン取得
+    // dd($gh_id[0]->owner_id);
+    // stdClassから変のみを取得して比較
+    $access_token=$org_prof->access_token;
+    // dd($user_name);
+    // dd($access_token);
+    }else{
+    $members=DB::table('organizations')->where('organization_id',$org_prof->id)->get();
+        // dd($members);
+        $mem_profs=array();
+        foreach ($members as $member){
+            $mem_profs[]=DB::table('gh_profiles')->where('id',$member->gh_account_id)->first();
+        }
+        // dd($mem_profs);
+        foreach($mem_profs as $mem_prof){
+            if($mem_prof->access_token!=null){
+                $access_token=$mem_prof->access_token;
+                break;
+            }
+        }    
+}
     // 引数のidはrepositoryのidを指定
         // アクセストークン取得
         // valueで値のみ取得
@@ -198,7 +270,6 @@ function register_issue($repos_id){
         // stdClassから変数のみを取得して比較
         $user_inf=DB::table('gh_profiles')->where('id',$gh_id)->get();
         $user_name=$user_inf[0]->acunt_name;
-        $access_token=$user_inf[0]->access_token;
         // dd($user_name);
         // dd($access_token);
 
