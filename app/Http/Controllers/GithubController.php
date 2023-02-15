@@ -96,7 +96,7 @@ function gh_organization($access_token){
     if(!($ghIdCheck)){
            // idが存在しないならDBに追加
             // Gh_account
-            $result= Gh_profiles::create(['id'=>$org['id'],'acunt_name'=>$org['login'],'access_token'=>$access_token,'org'=>true]);
+            $result= Gh_profiles::create(['id'=>$org['id'],'acunt_name'=>$org['login'],'access_token'=>null,'org'=>true]);
         $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$org['id']]);
     
         }else{
@@ -117,18 +117,15 @@ function gh_repository($access_token){
         $user_infs=DB::table('gh_profiles')->where('access_token',$access_token)->get();
         // dd($user_infs);
         foreach($user_infs as $user_inf){
-            if($user_inf->org===0){
+            if($user_inf->access_token!=null){
         $resJsonRepos=httpRequest('get', "https://api.github.com/users/".$user_inf->acunt_name."/repos", null, ['Authorization: Bearer ' . $access_token]);
         // dd($resJsonRepos);
-        }else{
-            $repos=httpRequest('get', "https://api.github.com/orgs/".$user_inf->acunt_name."/repos", null, ['Authorization: Bearer ' . $access_token]);
-        }
-    }
-        //  DB格納
+          //  DB格納
         foreach($resJsonRepos as $resJsonRepo){
+            // dd($resJsonRepo);
             $repoIdCheck=DB::table('repositories')->where('id', $resJsonRepo['id'])->exists();
             if(!($repoIdCheck)){
-                $result=Repositories::create(['id'=>$resJsonRepo['id'],'gh_account_id'=>$user_inf[0]->id,'repos_name'=>$resJsonRepo['name'],'owner_id'=>$resJsonRepo['owner']['id'],'owner_name'=>$resJsonRepo['owner']['login'],
+                $result=Repositories::create(['id'=>$resJsonRepo['id'],'gh_account_id'=>$user_inf->id,'repos_name'=>$resJsonRepo['name'],'owner_id'=>$resJsonRepo['owner']['id'],'owner_name'=>$resJsonRepo['owner']['login'],
                 'created_date'=>fix_timezone($resJsonRepo['created_at'])]);
             }else{
                 DB::table('repositories')
@@ -138,7 +135,9 @@ function gh_repository($access_token){
                 ]);
             }
 }   
-//  DB格納
+        }else{
+            $repos=httpRequest('get', "https://api.github.com/orgs/".$user_inf->acunt_name."/repos", null, ['Authorization: Bearer ' . $access_token]);
+            //  DB格納
         foreach($repos as $repo){
             $repoCheck=DB::table('repositories')->where('id', $repo['id'])->exists();
             if(!($repoCheck)){
@@ -151,6 +150,8 @@ function gh_repository($access_token){
                     'id'=>$repo['id']
                 ]);
             }
+        }
+}
 }
 }
 
@@ -168,22 +169,19 @@ class GithubController extends Controller
     // gh_account_idをuser_idで条件づけて取得
     $gh_account_ids=Gh_accounts::where('user_id',$user_id)->get();
     // gh_account_idからacunt_nameを持ってくる
+    $gh_profs=array();
     foreach($gh_account_ids as $gh_account_id){
-    $gh_prof=Gh_profiles::where('id',$gh_account_id['gh_account_id'])->get();
-    // dd($gh_prof[0]->org);
-    if($gh_prof[0]->org===0){
-    $gh_name[]=$gh_prof[0]->acunt_name;
+    $gh_profs[]=Gh_profiles::where('id',$gh_account_id['gh_account_id'])->get();
     }
-}
-    if(isset($gh_name)) {
-        return view('dashboard',["gh_names"=>$gh_name]);
+    // dd($gh_profs);
+    if(isset($gh_profs)) {
+        return view('dashboard',["gh_names"=>$gh_profs]);
     }
     else{
 //   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
     return view ('dashboard');
 }
-}
-
+    }
     /**
      * Show the form for creating a new resource.
      *
