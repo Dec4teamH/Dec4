@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Gh_profiles;
+use App\Models\Organization;
+use DB;
 
 class OrganizationController extends Controller
 {
@@ -45,7 +48,15 @@ class OrganizationController extends Controller
      */
     public function show($id)
     {
-        
+        $orgs=DB::table('organizations')->where('gh_account_id',$id)->get();
+        // dd($orgs);
+        $gh_profs=array();
+        foreach ($orgs as $org){
+            $gh_profs[]=DB::table('gh_profiles')->where('id',$org->organization_id)->first();
+        }
+        // dd($gh_profs);
+
+        return view("organization",["gh_profs"=>$gh_profs]);
     }
 
     /**

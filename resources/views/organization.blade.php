@@ -11,20 +11,14 @@
                 <div>
                     <ul>
                         @foreach ($gh_profs as $gh_prof)
-                            @if ($gh_prof->org === 1)
-                                <li>
-                                    <a href="{{ route('repository.show', $gh_prof->id) }}">
-                                        {{ $gh_prof->acunt_name }}</a>
-                                </li>
-                            @endif
+                            <li>
+                                <a href="{{ route('repository.show', $gh_prof->id) }}">
+                                    {{ $gh_prof->acunt_name }}</a>
+                            </li>
                         @endforeach
-                        @foreach ($gh_profs as $gh_prof)
-                            @if ($gh_prof->org === 0)
-                                <li><a href="{{ route('repository.show', $gh_prof->id) }}">personal
-                                        repositories</a>
-                                </li>
-                            @endif
-                        @endforeach
+                        <li><a href="{{ route('repository.show', $gh_prof->id) }}">personal
+                                repositories</a>
+                        </li>
                     </ul>
                 </div>
             </div>
