@@ -15,6 +15,7 @@ use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
 use DB;
+use DateTime;
 
 // commitの取得時間をdatetime型に変換する関数
 function fix_timezone($datetime){
@@ -156,7 +157,7 @@ function tell_close_flag($close_flag){
     }
 }
 // pullrequest情報をDBに登録
-function gh_pullreqest($repos_id){
+function gh_pullrequest($repos_id){
     $Pullreqevents=event_getter($repos_id,2);
     $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
     // dd($gh_id[0]->owner_id);
@@ -336,6 +337,33 @@ function get_commit_data($repos_id){
     // dd($cycle['count']);
     return $cycle;
 }
+
+function evaluation($repos_id){
+    // issue完了率
+    $open=Issues::where('close_flag', 0)->count();
+    $close=Issues::where('close_flag', 1)->count();
+    $rate=$close / ($open + $close);
+    // dd($rate);
+
+    // まずはrepository作成日から今日までの差分を求める
+    $create_day=Repositories::where('id',$repos_id)->orderBy('created_date','asc')->value('created_date');
+    //dd($create_day);
+    $today = date("Y-m-d H:i:s");
+    $create_day=DateTime::createFromFormat('Y-m-d H:i:s', $create_day);
+    $today=DateTime::createFromFormat('Y-m-d H:i:s', $today);
+    // dd($create_day);
+    // dd($today);
+    $diff = $create_day->diff($today);
+    //dd($diff->days);
+
+    $pullreq_count=Pullrequests::where('repositories_id',$repos_id)->count();
+    //dd($pullreq_count);
+
+    $pullreq_ave=$pullreq_count/$diff->days;
+    dd($pullreq_ave);
+
+}
+
 class DetailController extends Controller
 {
     /**
@@ -377,10 +405,14 @@ class DetailController extends Controller
      */
     public function show($id)
     {
+        //確かめゾーン
+        evaluation($id);
+        // ここまで
+
         // commitの登録
         register_commit($id);
         // pullrequestの登録
-        gh_pullreqest($id);
+        gh_pullrequest($id);
         // issueの登録
         // dd(event_getter($id,1));
         register_issue($id);
