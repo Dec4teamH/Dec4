@@ -73,9 +73,7 @@ function gh_user($access_token){
         if(!($ghIdCheck)){
             // idが存在しないならDBに追加
             // Gh_account
-                    $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token,'org'=>false]);
-        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
-    
+                    $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token,'org'=>false]);    
         }else{
             // idが存在するならDBを上書き
             DB::table('gh_profiles')
@@ -86,21 +84,26 @@ function gh_user($access_token){
                 'access_token'=>$access_token
             ]);
         }
+        // gh_accountテーブルでも確認
+        $gh_accountCheck=DB::table('gh_accounts')->where('gh_account_id', $resJsonUser['id'])->where('user_id',Auth::user()->id)->exists();
+        if(!($gh_accountCheck)){
+            $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
+        }
 }
+
+
 function  gh_member($mem,$access_token){
     // dd($mem);
     $url=str_replace("{/member}","",$mem['members_url']);
     // dd($url);
-    $members=httpRequest('get', $url, null, ['Authorization: Bearer ' . $access_token]);
+    $members=httpRequest('get', $url."?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
     // dd($members);
     foreach ($members as $member){
         $ghIdCheck=DB::table('gh_profiles')->where('id', $member['id'])->exists();
         if(!($ghIdCheck)){
             // idが存在しないならDBに追加
             // Gh_account
-                    $result= Gh_profiles::create(['id'=>$member['id'],'acunt_name'=>$member['login'],'access_token'=>null,'org'=>false]);
-        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$member['id']]);
-    
+                    $result= Gh_profiles::create(['id'=>$member['id'],'acunt_name'=>$member['login'],'access_token'=>null]);    
         }else{
             // idが存在するならDBを上書き
             DB::table('gh_profiles')
@@ -121,7 +124,7 @@ function gh_organization($access_token){
     // organizationのメンバーズをpublicに変更する
     $acunt_name=DB::table('gh_profiles')->where('access_token',$access_token)->first();
     // dd($acunt_name->acunt_name);
-    $orgs=httpRequest('get', 'https://api.github.com/users/'.$acunt_name->acunt_name.'/orgs', null, ['Authorization: Bearer ' . $access_token]);
+    $orgs=httpRequest('get', 'https://api.github.com/users/'.$acunt_name->acunt_name.'/orgs?per_page=100', null, ['Authorization: Bearer ' . $access_token]);
     // dd($orgs);
     foreach ($orgs as $org){
     
@@ -129,9 +132,7 @@ function gh_organization($access_token){
     if(!($ghIdCheck)){
            // idが存在しないならDBに追加
             // Gh_account
-            $result= Gh_profiles::create(['id'=>$org['id'],'acunt_name'=>$org['login'],'access_token'=>null,'org'=>true]);
-        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$org['id']]);
-    
+            $result= Gh_profiles::create(['id'=>$org['id'],'acunt_name'=>$org['login'],'access_token'=>null]);
         }else{
             // idが存在するならDBを上書き
             DB::table('gh_profiles')
@@ -206,24 +207,8 @@ class GithubController extends Controller
         // DBに格納
 // user
         gh_user($access_token);
-// email
-        $resJsonEmail =httpRequest('get', 'https://api.github.com/user/emails', null, ['Authorization: Bearer ' . $access_token]);
-
 // orgs
         gh_organization($access_token);
-// //  commit
-//         foreach ($resJsonRepos as $resJsonRepo){
-//             $resJsonCommits[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['commits_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-//         }
-// // issue
-//         foreach ($resJsonRepos as $resJsonRepo){
-//                     $resJsonIssues[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['issues_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-//         }
-// // merge
-//         foreach ($resJsonRepos as $resJsonRepo){
-//                 $resJsonMerges[]=httpRequest('get',str_replace('{/sha}','',$resJsonRepo['merges_url']) , null, ['Authorization: Bearer ' .$access_token ]);
-//         }
-
         return redirect()->route("dashboard.index");
 }
 

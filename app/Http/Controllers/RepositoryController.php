@@ -59,7 +59,7 @@ function gh_repository($id){
         // dd($org_inf);
         if($org_inf->access_token!=null){
             $access_token=$org_inf->access_token;
-        $resJsonRepos=httpRequest('get', "https://api.github.com/users/".$org_inf->acunt_name."/repos", null, ['Authorization: Bearer ' . $access_token]);
+        $resJsonRepos=httpRequest('get', "https://api.github.com/users/".$org_inf->acunt_name."/repos?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
         // dd($resJsonRepos);
           //  DB格納
         foreach($resJsonRepos as $resJsonRepo){
@@ -92,7 +92,7 @@ function gh_repository($id){
             }
         }        
         
-            $repos=httpRequest('get', "https://api.github.com/orgs/".$org_inf->acunt_name."/repos", null, ['Authorization: Bearer ' . $access_token]);
+            $repos=httpRequest('get', "https://api.github.com/orgs/".$org_inf->acunt_name."/repos?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
             //  DB格納
         foreach($repos as $repo){
             $repoCheck=DB::table('repositories')->where('id', $repo['id'])->exists();
