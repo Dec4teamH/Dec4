@@ -51,4 +51,5 @@ Route::get('graph/issue',function(){
     return view('Gitissue_view');
 })->name('issue');
 
+
 require __DIR__.'/auth.php';

@@ -175,8 +175,12 @@ function register_commit($repos_id){
     //dd($commit0['commit']['author']['name']);
     // dd($commit0['commit']['message']);
     // dd($commit0['commit']['author']['date']);
-    //dd(fix_timezone($commit0['commit']['author']['date']));
-
+    //dd(fix_timezone($commit0['commit']['
+    if(array_key_exists("message",$resJsonCommits)){
+    if($resJsonCommits['message']==="Git Repository is empty."){
+        return true;
+    }
+}
 
     foreach($resJsonCommits as $resJsonCommit){
         $user_id=$resJsonCommit['author']['id'];
@@ -191,7 +195,7 @@ function register_commit($repos_id){
             continue;
         }
     }
-
+    return false;
 }
 
 function tell_close_flag($close_flag){
@@ -235,7 +239,7 @@ function gh_pullreqest($repos_id){
 }
 
 // issueの登録
-function register_issue($repos_id){
+function register_issue($repos_id){ 
         $repository=DB::table('repositories')->where("id",$repos_id)->first();
     $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
     // dd($org_prof);
@@ -331,32 +335,6 @@ function register_issue($repos_id){
             }
         }
 }
-// ユーザーと登録したgh_accountの関連、gh_accountの情報を取得してDBに登録
-function gh_user($access_token){
-// User情報
-        $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
-        //dd($resJsonUser);
-        // Gh_ profiles
-        // githubのaccountidがテーブルに存在しているのか確認
-        $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
-        if(!($ghIdCheck)){
-            // idが存在しないならDBに追加
-            // Gh_account
-                    $result= Gh_profiles::create(['id'=>$resJsonUser['id'],'acunt_name'=>$resJsonUser['login'],'access_token'=>$access_token,'org'=>false]);
-        $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
-    
-        }else{
-            // idが存在するならDBを上書き
-            DB::table('gh_profiles')
-            ->where('id',$resJsonUser['id'])
-            ->update([
-                'id'=>$resJsonUser['id'],
-                'acunt_name'=>$resJsonUser['login'],
-                'access_token'=>$access_token
-            ]);
-        }
-}
-
 function devide_time($datetime){
     // dd($datetime);
     $year=mb_substr($datetime,0,4);
@@ -477,7 +455,8 @@ class DetailController extends Controller
     public function show($id)
     {
         // commitの登録
-        register_commit($id);
+        $error=register_commit($id);
+        // dd($error);
         // pullrequestの登録
         gh_pullreqest($id);
         // issueの登録
@@ -487,7 +466,7 @@ class DetailController extends Controller
         // DB取り出し
         $data=get_commit_data($id);
 
-        return view('Gitgraph',["state"=>"commit","data"=>$data]);
+        return view('Gitgraph',["state"=>"commit","data"=>$data,"error"=>$error]);
     }
 
     /**
