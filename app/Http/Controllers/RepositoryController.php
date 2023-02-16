@@ -52,64 +52,6 @@ function httpRequest($curlType, $url, $params = null, $header = null)
                                 return $Output;
                             }
 
-// repositry情報をDBに登録
-function gh_repository($id){
-//  repos
-        $org_inf=DB::table('gh_profiles')->where('id',$id)->first();
-        // dd($org_inf);
-        if($org_inf->access_token!=null){
-            $access_token=$org_inf->access_token;
-        $resJsonRepos=httpRequest('get', "https://api.github.com/users/".$org_inf->acunt_name."/repos?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
-        // dd($resJsonRepos);
-          //  DB格納
-        foreach($resJsonRepos as $resJsonRepo){
-            // dd($resJsonRepo);
-            $repoIdCheck=DB::table('repositories')->where('id', $resJsonRepo['id'])->exists();
-            if(!($repoIdCheck)){
-                $result=Repositories::create(['id'=>$resJsonRepo['id'],'gh_account_id'=>$org_inf->id,'repos_name'=>$resJsonRepo['name'],'owner_id'=>$resJsonRepo['owner']['id'],'owner_name'=>$resJsonRepo['owner']['login'],
-                'created_date'=>fix_timezone($resJsonRepo['created_at'])]);
-            }else{
-                DB::table('repositories')
-                ->where('id', $resJsonRepo['id'])
-                ->update([
-                    'id'=>$resJsonRepo['id']
-                ]);
-            }
-} 
-        }
-        else{
-        $members=DB::table('organizations')->where('organization_id',$id)->get();
-        // dd($members);
-        $mem_profs=array();
-        foreach ($members as $member){
-            $mem_profs[]=DB::table('gh_profiles')->where('id',$member->gh_account_id)->first();
-        }
-        // dd($mem_profs);
-        foreach($mem_profs as $mem_prof){
-            if($mem_prof->access_token!=null){
-                $access_token=$mem_prof->access_token;
-                break;
-            }
-        }        
-        
-            $repos=httpRequest('get', "https://api.github.com/orgs/".$org_inf->acunt_name."/repos?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
-            //  DB格納
-        foreach($repos as $repo){
-            $repoCheck=DB::table('repositories')->where('id', $repo['id'])->exists();
-            if(!($repoCheck)){
-                $result=Repositories::create(['id'=>$repo['id'],'gh_account_id'=>$org_inf->id,'repos_name'=>$repo['name'],'owner_id'=>$repo['owner']['id'],'owner_name'=>$repo['owner']['login'],
-                'created_date'=>fix_timezone($repo['created_at'])]);
-            }else{
-                DB::table('repositories')
-                ->where('id', $repo['id'])
-                ->update([
-                    'id'=>$repo['id']
-                ]);
-            }
-        }
-}
-}
-
 class RepositoryController extends Controller
 {
     /**
@@ -151,8 +93,7 @@ class RepositoryController extends Controller
      */
     public function show($id)
     {
-        // repository
-        gh_repository($id);
+        
         $repositories=DB::table('repositories')->where('owner_id',$id)->get();
         return view ('Repository',['repositories'=>$repositories,"id"=>$id]);
     }
