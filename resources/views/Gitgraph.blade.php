@@ -17,6 +17,10 @@
         </div>
     </div>
 @else
+    <form action="{{ route('detail.edit', $id) }}" method="get">
+        @csrf
+        <button type="submit">更新</button>
+    </form>
     <canvas id='canvas' width="500" height="400" data="good"></canvas>
 
     <div>

@@ -466,7 +466,7 @@ class DetailController extends Controller
         // DB取り出し
         $data=get_commit_data($id);
 
-        return view('Gitgraph',["state"=>"commit","data"=>$data,"error"=>$error]);
+        return view('Gitgraph',["state"=>"commit","data"=>$data,"error"=>$error,"id"=>$id]);
     }
 
     /**
@@ -477,7 +477,15 @@ class DetailController extends Controller
      */
     public function edit($id)
     {
-        //
+        // commitの登録
+        $error=register_commit($id);
+        // dd($error);
+        // pullrequestの登録
+        gh_pullreqest($id);
+        // issueの登録
+        // dd(event_getter($id,1));
+        register_issue($id);
+        return redirect()->route('detail.show',$id);
     }
 
     /**
