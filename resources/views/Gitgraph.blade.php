@@ -64,10 +64,10 @@
                 // 受け取った変数をjsに渡す
                 const state = `{{ $state }}`;
                 // コミットの数（仮置き）
-                const num = `{{ $data['count'] }}`;
+                const num = `{{ $evaluation['score'] }}`;
                 // サイクルの状態（仮置き）
-                const cicle_state = "good";
+                const cicle_state = `{{ $evaluation['state'] }}`;
             </script>
-            <script src={{ asset('/js/graph.js') }}></script>
-            <script src={{ asset('/js/app.js') }}></script>
+            <script src="{{ asset('/js/graph.js') }}"></script>
+            <script src="{{ asset('/js/app.js') }}"></script>
 </x-app-layout>
