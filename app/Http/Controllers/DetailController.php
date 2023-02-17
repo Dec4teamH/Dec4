@@ -340,10 +340,16 @@ function get_commit_data($repos_id){
 
 function evaluation($repos_id){
     // issue完了率
-    $open=Issues::where('close_flag', 0)->count();
-    $close=Issues::where('close_flag', 1)->count();
-    $rate=$close / ($open + $close);
-    // dd($rate);
+    $open=Issues::where('repositories_id',$repos_id)->where('close_flag', 0)->count();
+    $close=Issues::where('repositories_id',$repos_id)->where('close_flag', 1)->count();
+    // dd($open);
+    // dd($close);
+    if(($open+$close)===0){
+        $rate=0;
+    }else{
+        $rate=$close / ($open + $close);
+    }
+    //dd($rate);
 
     // まずはrepository作成日から今日までの差分を求める
     $create_day=Repositories::where('id',$repos_id)->orderBy('created_date','asc')->value('created_date');
@@ -360,30 +366,22 @@ function evaluation($repos_id){
     //dd($pullreq_count);
 
     $pullreq_eva=($pullreq_count/$diff->days)/3;
-    // dd($pullreq_eva);
+    //dd($pullreq_eva);
 
     $score=$rate+$pullreq_eva;
-    // dd($evaluation);
-    switch($score){
-        case 2 <= $score:
-            $evaluation="exellent";
-            break;
-        case ((1.5 <= $score) && ($score < 2)):
-            $evaluation="very good";
-            break;
-        case ((1.0 <= $score) && ($score < 1.5)):
-            $evaluation="good";
-            break;
-        case ((0.5 <= $score) && ($score < 1.0)):
-            $evaluation="average";
-            break;
-        case ($score < 0.5):
-            $evaluation="poor";
-            break;
-        default:
-            $evaluation="error";
-            break;
+    // dd($score);
+    if($score >= 2.0){
+        $evaluation="exellent";
+    }elseif(($score >= 1.5) && ($score < 2.0)){
+        $evaluation="very good";
+    }elseif(($score >= 1.0) && ($score < 1.5)){
+        $evaluation="good";
+    }elseif(($score >= 0.5) && ($score < 1.0)){
+        $evaluation="average";
+    }else{
+        $evaluation="poor";
     }
+    // dd($evaluation);
 
     return $evaluation;
 
