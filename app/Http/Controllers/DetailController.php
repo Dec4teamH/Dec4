@@ -370,19 +370,25 @@ function evaluation($repos_id){
 
     $score=$rate+$pullreq_eva;
     // dd($score);
-    if($score >= 2.0){
-        $evaluation="exellent";
-    }elseif(($score >= 1.5) && ($score < 2.0)){
-        $evaluation="very good";
-    }elseif(($score >= 1.0) && ($score < 1.5)){
-        $evaluation="good";
-    }elseif(($score >= 0.5) && ($score < 1.0)){
-        $evaluation="average";
-    }else{
-        $evaluation="poor";
-    }
-    // dd($evaluation);
 
+    if($score >= 2.0){
+        $state="exellent";
+    }elseif(($score >= 1.5) && ($score < 2.0)){
+        $state="very good";
+    }elseif(($score >= 1.0) && ($score < 1.5)){
+        $state="good";
+    }elseif(($score >= 0.5) && ($score < 1.0)){
+        $state="average";
+    }else{
+        $state="poor";
+    }
+
+    $evaluation=array();
+    $evaluation['rate']=round($rate, 2);
+    $evaluation['score']=round($score, 2);
+    $evaluation['state']=$state;
+
+    // dd($evaluation);
     return $evaluation;
 
 }
