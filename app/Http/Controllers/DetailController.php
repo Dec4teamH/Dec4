@@ -473,8 +473,7 @@ class DetailController extends Controller
      */
     public function show($id)
     {
-        // commitの登録
-        // DB取り出し
+              // DB取り出し
         $data=get_commit_data($id);
 
         return view('Gitgraph',["state"=>"commit","data"=>$data,"id"=>$id]);
