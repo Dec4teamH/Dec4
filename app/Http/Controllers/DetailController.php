@@ -15,6 +15,7 @@ use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
 use DB;
+use DateTime;
 
 // commitの取得時間をdatetime型に変換する関数
 function fix_timezone($datetime){
@@ -225,7 +226,7 @@ function tell_close_flag($close_flag){
     }
 }
 // pullrequest情報をDBに登録
-function gh_pullreqest($repos_id){
+function gh_pullrequest($repos_id){
     $Pullreqevents=event_getter($repos_id,2);
     $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
     // dd($gh_id[0]->owner_id);
@@ -346,7 +347,7 @@ function register_issue($repos_id){
                     Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
                 'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
                 }else{
-                    continue;
+                    DB::table('issues')->update(['close_flag'=>1]);
                 }
             }else{
                 continue;
@@ -432,6 +433,62 @@ function get_commit_data($repos_id){
     // dd($cycle);
     return $cycle;
 }
+
+function evaluation($repos_id){
+    // issue完了率
+    $open=Issues::where('repositories_id',$repos_id)->where('close_flag', 0)->count();
+    $close=Issues::where('repositories_id',$repos_id)->where('close_flag', 1)->count();
+    // dd($open);
+    // dd($close);
+    if(($open+$close)===0){
+        $rate=0;
+    }else{
+        $rate=$close / ($open + $close);
+    }
+    //dd($rate);
+
+    // まずはrepository作成日から今日までの差分を求める
+    $create_day=Repositories::where('id',$repos_id)->orderBy('created_date','asc')->value('created_date');
+    //dd($create_day);
+    $today = date("Y-m-d H:i:s");
+    $create_day=DateTime::createFromFormat('Y-m-d H:i:s', $create_day);
+    $today=DateTime::createFromFormat('Y-m-d H:i:s', $today);
+    // dd($create_day);
+    // dd($today);
+    $diff = $create_day->diff($today);
+    // dd($diff);
+
+    $pullreq_count=Pullrequests::where('repositories_id',$repos_id)->count();
+    //dd($pullreq_count);
+
+    $pullreq_eva=($pullreq_count/$diff->days)/3;
+    //dd($pullreq_eva);
+
+    $score=$rate+$pullreq_eva;
+    // dd($score);
+
+    if($score >= 2.0){
+        $state="exellent";
+    }elseif(($score >= 1.5) && ($score < 2.0)){
+        $state="very good";
+    }elseif(($score >= 1.0) && ($score < 1.5)){
+        $state="good";
+    }elseif(($score >= 0.5) && ($score < 1.0)){
+        $state="average";
+    }else{
+        $state="poor";
+    }
+
+    $evaluation=array();
+    $evaluation['rate']=round($rate, 2);
+    $evaluation['score']=round($score, 2);
+    $evaluation['state']=$state;
+
+    // dd($evaluation);
+    return $evaluation;
+
+}
+
 class DetailController extends Controller
 {
     /**
@@ -473,10 +530,13 @@ class DetailController extends Controller
      */
     public function show($id)
     {
-              // DB取り出し
+        // DB取り出し
         $data=get_commit_data($id);
 
-        return view('Gitgraph',["state"=>"commit","data"=>$data,"id"=>$id]);
+        // 評価
+        $evaluation=evaluation($id);
+
+        return view('Gitgraph',["state"=>"commit","evaluation"=>$evaluation,"data"=>$data]);
     }
 
     /**
