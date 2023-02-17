@@ -10,10 +10,10 @@ use App\Models\Repositories;
 use App\Models\Issues;
 use App\Models\Commits;
 use App\Models\Pullrequests;
-use App\Models\Organization;
-use DB;
 use App\Models\User;
 use Auth;
+use DB;
+
 // commitの取得時間をdatetime型に変換する関数
 function fix_timezone($datetime){
     $year=mb_substr($datetime,0,4);
@@ -180,7 +180,6 @@ function register_commit($repos_id){
     }
 }
 
-    
     foreach($resJsonCommits as $resJsonCommit){
     // dd($resJsonCommit);
     // dd($resJsonCommit['author']['id']);
@@ -352,7 +351,6 @@ function register_issue($repos_id){
             }
         }
 }
-
 // 
 function gh_repository($id){
 //  repos
@@ -500,6 +498,9 @@ function gh_organization($access_token){
 
 
 
+
+
+
 class Kernel extends ConsoleKernel
 {
     /**
@@ -512,7 +513,9 @@ class Kernel extends ConsoleKernel
     {
         $schedule->call(function(){
             $ids=DB::table('repositories')->get();
+            // dd($ids);
             foreach ($ids as $id){
+                // dd($id);
             // commitの登録
         $error=register_commit($id->id);
         // dd($error);
@@ -529,6 +532,7 @@ class Kernel extends ConsoleKernel
 // orgs
         gh_organization($access_token->access_token);
         }
+
         })->daily();
         // $schedule->command('inspire')->hourly();
     }

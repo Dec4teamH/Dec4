@@ -353,6 +353,7 @@ function register_issue($repos_id){
             }
         }
 }
+
 function devide_time($datetime){
     // dd($datetime);
     $year=mb_substr($datetime,0,4);
