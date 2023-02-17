@@ -10,6 +10,7 @@ use App\Models\Repositories;
 use App\Models\Issues;
 use App\Models\Commits;
 use App\Models\Pullrequests;
+use App\Models\Organization;
 use DB;
 use App\Models\User;
 use Auth;
@@ -179,10 +180,28 @@ function register_commit($repos_id){
     }
 }
 
+    
     foreach($resJsonCommits as $resJsonCommit){
+    // dd($resJsonCommit);
+    // dd($resJsonCommit['author']['id']);
+    if($resJsonCommit['author']==null){
+        $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit["node_id"])->exists();
+        if(!($commitIdCheck)){
+            // DBにデータがないなら登録              
+            Commits::create(['id'=>$resJsonCommit['node_id'],'repositories_id'=>$repos_id,'sha'=>$resJsonCommit['sha'],'user_id'=>null,
+            'message'=>$resJsonCommit['commit']['message'],'commit_date'=>fix_timezone($resJsonCommit['commit']['author']['date'])]);
+        }else{
+            continue;
+        }
+    }else{
         $user_id=$resJsonCommit['author']['id'];
         // dd($resJsonCommit);
         // dd($resJsonCommit['commit']['message']);
+
+        $prof_check=DB::table('gh_profiles')->where('id',$user_id)->exists();
+        if(!($prof_check)){
+            Gh_profiles::create(['id'=>$user_id,"acunt_name"=>$resJsonCommit['author']['login'],"access_token"=>null]);
+        }
         $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit["node_id"])->exists();
         if(!($commitIdCheck)){
             // DBにデータがないなら登録              
@@ -191,6 +210,7 @@ function register_commit($repos_id){
         }else{
             continue;
         }
+    }
     }
     return false;
 }
@@ -505,9 +525,9 @@ class Kernel extends ConsoleKernel
         $access_tokens=DB::table('gh_profiles')->where('access_token',"!=","null")->get();
         foreach($access_tokens as $access_token){ 
  // user
-        gh_user($access_token);
+        gh_user($access_token->access_token);
 // orgs
-        gh_organization($access_token);
+        gh_organization($access_token->access_token);
         }
         })->daily();
         // $schedule->command('inspire')->hourly();

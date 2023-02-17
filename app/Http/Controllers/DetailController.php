@@ -183,9 +183,26 @@ function register_commit($repos_id){
 }
 
     foreach($resJsonCommits as $resJsonCommit){
+    // dd($resJsonCommit);
+    // dd($resJsonCommit['author']['id']);
+    if($resJsonCommit['author']==null){
+        $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit["node_id"])->exists();
+        if(!($commitIdCheck)){
+            // DBにデータがないなら登録              
+            Commits::create(['id'=>$resJsonCommit['node_id'],'repositories_id'=>$repos_id,'sha'=>$resJsonCommit['sha'],'user_id'=>null,
+            'message'=>$resJsonCommit['commit']['message'],'commit_date'=>fix_timezone($resJsonCommit['commit']['author']['date'])]);
+        }else{
+            continue;
+        }
+    }else{
         $user_id=$resJsonCommit['author']['id'];
         // dd($resJsonCommit);
         // dd($resJsonCommit['commit']['message']);
+
+        $prof_check=DB::table('gh_profiles')->where('id',$user_id)->exists();
+        if(!($prof_check)){
+            Gh_profiles::create(['id'=>$user_id,"acunt_name"=>$resJsonCommit['author']['login'],"access_token"=>null]);
+        }
         $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit["node_id"])->exists();
         if(!($commitIdCheck)){
             // DBにデータがないなら登録              
@@ -194,6 +211,7 @@ function register_commit($repos_id){
         }else{
             continue;
         }
+    }
     }
     return false;
 }
@@ -454,6 +472,7 @@ class DetailController extends Controller
      */
     public function show($id)
     {
+         // user
         // commitの登録
         $error=register_commit($id);
         // dd($error);
