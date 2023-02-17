@@ -11,6 +11,7 @@ use App\Models\Issues;
 use App\Models\Commits;
 use App\Models\Pullrequests;
 use App\Models\User;
+use  Illuminate\Support\Facades\Log;
 use Auth;
 use DB;
 
@@ -430,11 +431,6 @@ function gh_user($access_token){
                 'access_token'=>$access_token
             ]);
         }
-        // gh_accountテーブルでも確認
-        $gh_accountCheck=DB::table('gh_accounts')->where('gh_account_id', $resJsonUser['id'])->where('user_id',Auth::user()->id)->exists();
-        if(!($gh_accountCheck)){
-            $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
-        }
         $id=DB::table('gh_profiles')->where('access_token',$access_token)->first();
         gh_repository($id->id);
 }
@@ -496,11 +492,6 @@ function gh_organization($access_token){
 
 }
 
-
-
-
-
-
 class Kernel extends ConsoleKernel
 {
     /**
@@ -533,7 +524,13 @@ class Kernel extends ConsoleKernel
         gh_organization($access_token->access_token);
         }
 
-        })->daily();
+        })->name("github_api fetch" )->withoutOverlapping()->everyMinute()
+        ->onSuccess(function () {    
+            Log::alert('成功');
+                })
+                ->onFailure(function () {   
+                    Log::error('error');
+                });
         // $schedule->command('inspire')->hourly();
     }
 
