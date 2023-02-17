@@ -473,20 +473,11 @@ class DetailController extends Controller
      */
     public function show($id)
     {
-         // user
-        // commitの登録
-        $error=register_commit($id);
-        // dd($error);
-        // pullrequestの登録
-        gh_pullreqest($id);
-        // issueの登録
-        // dd(event_getter($id,1));
-        register_issue($id);
 
         // DB取り出し
         $data=get_commit_data($id);
 
-        return view('Gitgraph',["state"=>"commit","data"=>$data,"error"=>$error,"id"=>$id]);
+        return view('Gitgraph',["state"=>"commit","data"=>$data,"id"=>$id]);
     }
 
     /**
