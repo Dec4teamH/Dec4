@@ -253,7 +253,7 @@ function register_issue($repos_id){
                     Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
                 'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
                 }else{
-                    continue;
+                    DB::table('issues')->update(['close_flag'=>1]);
                 }
             }else{
                 continue;
