@@ -354,13 +354,38 @@ function evaluation($repos_id){
     // dd($create_day);
     // dd($today);
     $diff = $create_day->diff($today);
-    //dd($diff->days);
+    // dd($diff);
 
     $pullreq_count=Pullrequests::where('repositories_id',$repos_id)->count();
     //dd($pullreq_count);
 
-    $pullreq_ave=$pullreq_count/$diff->days;
-    dd($pullreq_ave);
+    $pullreq_eva=($pullreq_count/$diff->days)/3;
+    // dd($pullreq_eva);
+
+    $score=$rate+$pullreq_eva;
+    // dd($evaluation);
+    switch($score){
+        case 2 <= $score:
+            $evaluation="exellent";
+            break;
+        case ((1.5 <= $score) && ($score < 2)):
+            $evaluation="very good";
+            break;
+        case ((1.0 <= $score) && ($score < 1.5)):
+            $evaluation="good";
+            break;
+        case ((0.5 <= $score) && ($score < 1.0)):
+            $evaluation="average";
+            break;
+        case ($score < 0.5):
+            $evaluation="poor";
+            break;
+        default:
+            $evaluation="error";
+            break;
+    }
+
+    return $evaluation;
 
 }
 
@@ -406,7 +431,7 @@ class DetailController extends Controller
     public function show($id)
     {
         //確かめゾーン
-        evaluation($id);
+
         // ここまで
 
         // commitの登録
@@ -420,7 +445,10 @@ class DetailController extends Controller
         // DB取り出し
         $data=get_commit_data($id);
 
-        return view('Gitgraph',["state"=>"commit","data"=>$data]);
+        // 評価
+        $evaluation=evaluation($id);
+
+        return view('Gitgraph',["state"=>"commit","evaluation"=>$evaluation,"data"=>$data]);
     }
 
     /**
