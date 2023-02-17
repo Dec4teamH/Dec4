@@ -524,7 +524,7 @@ class Kernel extends ConsoleKernel
         gh_organization($access_token->access_token);
         }
 
-        })->name("github_api fetch" )->withoutOverlapping()->everyMinute()
+        })->name("github_api fetch" )->withoutOverlapping()->daily()
         ->onSuccess(function () {    
             Log::alert('成功');
                 })
