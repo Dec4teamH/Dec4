@@ -536,7 +536,7 @@ class DetailController extends Controller
         // 評価
         $evaluation=evaluation($id);
 
-        return view('Gitgraph',["state"=>"commit","evaluation"=>$evaluation,"data"=>$data]);
+        return view('Gitgraph',["state"=>"commit","id"=>$id,"evaluation"=>$evaluation,"data"=>$data]);
     }
 
     /**
