@@ -6,7 +6,6 @@ context = canvas.getContext('2d');
 let w = document.getElementById('canvas').clientWidth;
 let h = document.getElementById('canvas').clientHeight;
 //データ取得
-console.log(state);
 
 
 
@@ -19,14 +18,13 @@ let arrow_s_h = 0;
 let speed = `${num}`;
 // 円の中に簡単な情報を表示
 // 総数
-if (state === "commit") {
+
     context.beginPath();
     context.font = "13pt Arial";
     var text = "Score";
     var textWidth = context.measureText(text).width;
     context.fillText("Score", (w - textWidth) / 2, H - 100);
     context.fill();
-}
 // else {
 //     context.beginPath();
 //     context.font = "13pt Arial";
