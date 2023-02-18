@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreign('repositories_id')->references('id')->on('repositories')->cascadeOnDelete();
             $table->string('title')->nullable();
             $table->string('body')->nullable();
-            $table->integer('user_id');
+            $table->integer('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('gh_profiles')->cascadeOnDelete();
             $table->boolean('close_flag');
             $table->timestamp('open_date');

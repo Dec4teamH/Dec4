@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('gh_profiles', function (Blueprint $table) {
             $table->integer('id')->primary();
             $table->string('acunt_name');
-            $table->string('access_token');
+            $table->string('access_token')->nullable();
             $table->timestamps();
         });
     }

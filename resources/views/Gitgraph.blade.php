@@ -9,7 +9,10 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div id="graph" class="flex justify-center">
-
+                    <form action="{{ route('detail.edit', $id) }}" method="get">
+                        @csrf
+                        <button type="submit">更新</button>
+                    </form>
                     <canvas id='canvas' width="500" height="400" data="good"></canvas>
 
                     <div>

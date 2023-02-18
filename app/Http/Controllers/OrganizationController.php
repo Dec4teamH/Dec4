@@ -2,23 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Validator;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
 use App\Models\Organization;
 use App\Models\Repositories;
-use App\Models\Issues;
 use App\Models\Commits;
+use App\Models\Issues;
 use App\Models\Pullrequests;
-
-use Dotenv\Validator as DotenvValidator;
-use App\Models\User;
-use Auth;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth as FacadesAuth;
 use DB;
-
-
 // githubapiから取得したじかんをDBに格納できるtimestampがたに変換
 // 0000-00-00T00:00:00Zを日本時間に直すかは考える
 function fix_timezone($timestamp){
@@ -507,10 +500,7 @@ function gh_organization($access_token){
 
 }
 
-
-
-
-class GithubController extends Controller
+class OrganizationController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -519,24 +509,9 @@ class GithubController extends Controller
      */
     public function index()
     {
-  // DBから登録したアクセストークンをもとに登録したgithubのアカウントを表示
-    $user_id=Auth::user()->id;
-    // gh_account_idをuser_idで条件づけて取得
-    $gh_account_ids=Gh_accounts::where('user_id',$user_id)->get();
-    // gh_account_idからacunt_nameを持ってくる
-    $gh_profs=array();
-    foreach($gh_account_ids as $gh_account_id){
-    $gh_profs[]=Gh_profiles::where('id',$gh_account_id['gh_account_id'])->get();
+        //
     }
-    // dd($gh_profs);
-    if(isset($gh_profs)) {
-        return view('dashboard',["gh_names"=>$gh_profs]);
-    }
-    else{
-//   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
-    return view ('dashboard');
-}
-    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -553,39 +528,54 @@ class GithubController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    // dashboardのpostメソッド（アクセストークン登録後の遷移）
     public function store(Request $request)
-    { 
-        // validation
-        $validator=Validator::make($request->all(),[
-            'access_token'=>'required',
-        ]);
-        if ($validator->fails()) {
-            return redirect()
-            ->route('dashboard.index');
-        }
-        $access_token=$request->access_token;
-        // apiでデータ取得
-        // DBに格納
-// user
-        gh_user($access_token);
-// orgs
-        gh_organization($access_token);
+    {
+        //
+    }
 
-        $owner_id=DB::table('gh_profiles')->where('access_token',$access_token)->first();
-        $ids=DB::table('repositories')->where('owner_id',$owner_id->id)->get();
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $orgs=DB::table('organizations')->where('gh_account_id',$id)->get();
+        // dd($orgs);
+        $gh_profs=array();
+        foreach ($orgs as $org){
+            $gh_profs[]=DB::table('gh_profiles')->where('id',$org->organization_id)->first();
+        }
+        // dd($gh_profs);
+        return view("organization",["gh_profs"=>$gh_profs,"id"=>$id]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $access_token=DB::table('gh_profiles')->where('id',$id)->first();
+        // dd($access_token);
+        gh_organization($access_token->access_token);
+        gh_repository($id);
         // commitの登録
-        foreach($ids as $id){
-            // dd($id);
-        $error=register_commit($id->id);
+        $ids=DB::table('repositories')->where('owner_id',$id)->get();
+        foreach($ids as $repos_id){
+            // dd($repos_id);
+        $error=register_commit($repos_id->id);
         // dd($error);
         // pullrequestの登録
-        gh_pullreqest($id->id);
+        gh_pullreqest($repos_id->id);
         // issueの登録
-        // dd(event_getter($id,1));
-        register_issue($id->id);
+        // dd(event_getter($repos_id,1));
+        register_issue($repos_id->id);
         }
-        $organization_ids=DB::table('organizations')->where('gh_account_id',$owner_id ->id)->get();
+        $organization_ids=DB::table('organizations')->where('gh_account_id',$id)->get();
         foreach($organization_ids as $organization_id){
             // dd($organization_id);]
             $repos_ids=DB::table('repositories')->where('owner_id',$organization_id->organization_id)->get();
@@ -599,29 +589,7 @@ class GithubController extends Controller
         register_issue($repos_id->id);
             }
         }
-        return redirect()->route("dashboard.index");
-}
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  varchar(255)  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        
+        return redirect()->route('organization.show',$id);
     }
 
     /**
@@ -633,7 +601,7 @@ class GithubController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        
     }
 
     /**
@@ -644,16 +612,6 @@ class GithubController extends Controller
      */
     public function destroy($id)
     {
-        // $id=acunt_name
-        // 名前からgithubのidを取得
-        $gh_profile=DB::table('gh_profiles')->where('acunt_name',$id)->get();
-        //dd($gh_profile);
-        $gh_id=$gh_profile[0]->id;
-        //dd($gh_id);
-        // idが同じ各テーブルを削除
-        DB::table('repositories')->where('gh_account_id',$gh_id)->delete();
-        DB::table('gh_profiles')->where('id',$gh_id)->delete();
-        DB::table('gh_accounts')->where('gh_account_id',$gh_id)->delete();
-        return redirect()->route('dashboard.index');
+        //
     }
 }

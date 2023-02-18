@@ -59,6 +59,33 @@ function httpRequest($curlType, $url, $params = null, $header = null){
 }
 
 function event_getter($repos_id,$get_id){
+    $repository=DB::table('repositories')->where("id",$repos_id)->first();
+    $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
+    // dd($org_prof);
+   
+    if($org_prof->access_token!=null){
+         // アクセストークン取得
+    // dd($gh_id[0]->owner_id);
+    // stdClassから変のみを取得して比較
+    $access_token=$org_prof->access_token;
+    // dd($user_name);
+    // dd($access_token);
+    }else{
+    $members=DB::table('organizations')->where('organization_id',$org_prof->id)->get();
+        // dd($members);
+        $mem_profs=array();
+        foreach ($members as $member){
+            $mem_profs[]=DB::table('gh_profiles')->where('id',$member->gh_account_id)->first();
+        }
+        // dd($mem_profs);
+        foreach($mem_profs as $mem_prof){
+            if($mem_prof->access_token!=null){
+                $access_token=$mem_prof->access_token;
+                break;
+            }
+        }    
+}
+// dd($access_token);
     // 引数のidはreositoryのidを指定
     // $get_id=0で commitを返す
     // $get_id=1でissuesを返す
@@ -66,10 +93,12 @@ function event_getter($repos_id,$get_id){
     $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
     $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->owner_id)->get();
     $user_name=$user_inf[0]->acunt_name;
-    $access_token=$user_inf[0]->access_token;
 // repositoryの名前を取得
     $name=DB::table('repositories')->where('id',$repos_id)->get('repos_name');
     // eventをとる
+    // dd($user_name);
+    // dd($name[0]->repos_name);
+    // dd($access_token);
     $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
     // dd($events);
     $Commit_event=array();
@@ -107,45 +136,85 @@ function event_getter($repos_id,$get_id){
 
 // commitの登録
 function register_commit($repos_id){
-    // 引数のidはreositoryのidを指定
-    // アクセストークン取得
-    $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
+
+    $repository=DB::table('repositories')->where("id",$repos_id)->first();
+    $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
+    // dd($org_prof);
+   
+    if($org_prof->access_token!=null){
+         // アクセストークン取得
     // dd($gh_id[0]->owner_id);
-    // stdClassから変数のみを取得して比較
-    $user_inf=DB::table('gh_profiles')->where('id',$gh_id[0]->owner_id)->get();
-    $user_name=$user_inf[0]->acunt_name;
-    $access_token=$user_inf[0]->access_token;
+    // stdClassから変のみを取得して比較
+    $access_token=$org_prof->access_token;
     // dd($user_name);
     // dd($access_token);
-
+    }else{
+    $members=DB::table('organizations')->where('organization_id',$org_prof->id)->get();
+        // dd($members);
+        $mem_profs=array();
+        foreach ($members as $member){
+            $mem_profs[]=DB::table('gh_profiles')->where('id',$member->gh_account_id)->first();
+        }
+        // dd($mem_profs);
+        foreach($mem_profs as $mem_prof){
+            if($mem_prof->access_token!=null){
+                $access_token=$mem_prof->access_token;
+                break;
+            }
+        }    
+}// 引数のidはreositoryのidを指定
+ $user_name=$org_prof->acunt_name;
     // repositoryの名前を取得
     $name=DB::table('repositories')->where('id',$repos_id)->get('repos_name');
     // $name=$name[0]->repos_name;
     // dd($name[0]->repos_name);
     // dd($user_inf);
-    $resJsonCommits=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/commits", null, ['Authorization: Bearer ' . $access_token]);
-
+    $resJsonCommits=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/commits?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
+    // dd($resJsonCommits);
     //$commit0=$resJsonCommits[0];
     //dd($commit0['node_id']);
     //dd($commit0['commit']['author']['name']);
     // dd($commit0['commit']['message']);
     // dd($commit0['commit']['author']['date']);
-    //dd(fix_timezone($commit0['commit']['author']['date']));
-
+    //dd(fix_timezone($commit0['commit']['
+    if(array_key_exists("message",$resJsonCommits)){
+    if($resJsonCommits['message']==="Git Repository is empty."){
+        return true;
+    }
+}
 
     foreach($resJsonCommits as $resJsonCommit){
-        //  dd($resJsonCommit);
-        // dd($resJsonCommit['commit']['message']);
+    // dd($resJsonCommit);
+    // dd($resJsonCommit['author']['id']);
+    if($resJsonCommit['author']==null){
         $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit["node_id"])->exists();
         if(!($commitIdCheck)){
             // DBにデータがないなら登録              
-            Commits::create(['id'=>$resJsonCommit['node_id'],'repositories_id'=>$repos_id,'sha'=>$resJsonCommit['sha'],'user_id'=>$resJsonCommit['author']['id'],
+            Commits::create(['id'=>$resJsonCommit['node_id'],'repositories_id'=>$repos_id,'sha'=>$resJsonCommit['sha'],'user_id'=>null,
+            'message'=>$resJsonCommit['commit']['message'],'commit_date'=>fix_timezone($resJsonCommit['commit']['author']['date'])]);
+        }else{
+            continue;
+        }
+    }else{
+        $user_id=$resJsonCommit['author']['id'];
+        // dd($resJsonCommit);
+        // dd($resJsonCommit['commit']['message']);
+
+        $prof_check=DB::table('gh_profiles')->where('id',$user_id)->exists();
+        if(!($prof_check)){
+            Gh_profiles::create(['id'=>$user_id,"acunt_name"=>$resJsonCommit['author']['login'],"access_token"=>null]);
+        }
+        $commitIdCheck=DB::table('commits')->where('id', $resJsonCommit["node_id"])->exists();
+        if(!($commitIdCheck)){
+            // DBにデータがないなら登録              
+            Commits::create(['id'=>$resJsonCommit['node_id'],'repositories_id'=>$repos_id,'sha'=>$resJsonCommit['sha'],'user_id'=>$user_id,
             'message'=>$resJsonCommit['commit']['message'],'commit_date'=>fix_timezone($resJsonCommit['commit']['author']['date'])]);
         }else{
             continue;
         }
     }
-
+    }
+    return false;
 }
 
 function tell_close_flag($close_flag){
@@ -189,7 +258,33 @@ function gh_pullrequest($repos_id){
 }
 
 // issueの登録
-function register_issue($repos_id){
+function register_issue($repos_id){ 
+        $repository=DB::table('repositories')->where("id",$repos_id)->first();
+    $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
+    // dd($org_prof);
+   
+    if($org_prof->access_token!=null){
+         // アクセストークン取得
+    // dd($gh_id[0]->owner_id);
+    // stdClassから変のみを取得して比較
+    $access_token=$org_prof->access_token;
+    // dd($user_name);
+    // dd($access_token);
+    }else{
+    $members=DB::table('organizations')->where('organization_id',$org_prof->id)->get();
+        // dd($members);
+        $mem_profs=array();
+        foreach ($members as $member){
+            $mem_profs[]=DB::table('gh_profiles')->where('id',$member->gh_account_id)->first();
+        }
+        // dd($mem_profs);
+        foreach($mem_profs as $mem_prof){
+            if($mem_prof->access_token!=null){
+                $access_token=$mem_prof->access_token;
+                break;
+            }
+        }    
+}
     // 引数のidはrepositoryのidを指定
         // アクセストークン取得
         // valueで値のみ取得
@@ -198,7 +293,6 @@ function register_issue($repos_id){
         // stdClassから変数のみを取得して比較
         $user_inf=DB::table('gh_profiles')->where('id',$gh_id)->get();
         $user_name=$user_inf[0]->acunt_name;
-        $access_token=$user_inf[0]->access_token;
         // dd($user_name);
         // dd($access_token);
 
@@ -209,7 +303,7 @@ function register_issue($repos_id){
 
         // openとcloseで処理を分ける
         // open用の処理
-        $resJsonIssues=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues", null, ['Authorization: Bearer ' . $access_token]);
+        $resJsonIssues=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
         // dd($resJsonIssues);
         // $issue0=$resJsonIssues[0];
         // dd($issue0['id']); //id
@@ -233,7 +327,7 @@ function register_issue($repos_id){
         }  
 
         // close用の処理
-        $resJsonIssues2=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues?state=closed", null, ['Authorization: Bearer ' . $access_token]);
+        $resJsonIssues2=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name."/issues?state=closed&per_page=100", null, ['Authorization: Bearer ' . $access_token]);
         // dd($resJsonIssues2);
         // $issue0=$resJsonIssues2[0];
         // dd($issue0);
@@ -279,6 +373,9 @@ function devide_time($datetime){
 }
 
 function get_commit_data($repos_id){
+    // 現在の日時を取得
+    $today = date("Y-m-d H:i:s");
+    // dd($today);
     // commitテーブルから取得
     $commits=DB::table('commits')->where('repositories_id',$repos_id)->orderBy('commit_date',"desc")->get();
     // dd($commits);
@@ -286,9 +383,7 @@ function get_commit_data($repos_id){
     // dd($gh_user);
     $pullreqs=DB::table('pullrequests')->where('repositories_id',$repos_id)->orderby("merge_date","asc")->get();
     // dd($pullreqs);
-    // 現在の日時を取得
-    $today = date("Y-m-d H:i:s");
-    // dd($today);
+    
     $devided_time=devide_time($today);
     // dd($devide_time);
     $today_commit=array();
@@ -335,6 +430,7 @@ function get_commit_data($repos_id){
     $cycle['commit']=$commits;
     $cycle['user']=$gh_user;
     // dd($cycle['count']);
+    // dd($cycle);
     return $cycle;
 }
 
@@ -434,18 +530,6 @@ class DetailController extends Controller
      */
     public function show($id)
     {
-        //確かめゾーン
-
-        // ここまで
-
-        // commitの登録
-        register_commit($id);
-        // pullrequestの登録
-        gh_pullrequest($id);
-        // issueの登録
-        // dd(event_getter($id,1));
-        register_issue($id);
-
         // DB取り出し
         $data=get_commit_data($id);
 
@@ -463,7 +547,15 @@ class DetailController extends Controller
      */
     public function edit($id)
     {
-        //
+        // commitの登録
+        $error=register_commit($id);
+        // dd($error);
+        // pullrequestの登録
+        gh_pullreqest($id);
+        // issueの登録
+        // dd(event_getter($id,1));
+        register_issue($id);
+        return redirect()->route('detail.show',$id);
     }
 
     /**
