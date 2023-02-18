@@ -12,7 +12,7 @@
               @foreach ($issues as $issue)
               <tr class="hover:bg-grey-lighter">
                 <td class="py-4 px-6 border-b border-grey-light">
-                  <h3 class="text-left font-bold text-lg text-grey-dark">{{ $issue->title }}</h3>
+                  <h3 class="text-left font-bold text-lg text-grey-dark">{{ $issue->repos_name }} {{ $issue->title }} -> {{ $issue->acunt_name }}</h3>
                   <div class="flex">
                     <!-- 更新ボタン -->
                     <!-- 削除ボタン -->

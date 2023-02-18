@@ -26,8 +26,13 @@ class IssueController extends Controller
      */
     public function index()
     {
-        $issues = DB::table('issues')->get();
-        //ddd($issues);
+      $issues = DB::table('issues')
+        ->join('gh_profiles','user_id', '=', 'gh_profiles.id')
+        ->join('repositories', 'repositories_id' , '=', 'repositories.id')
+        ->select('issues.*', 'gh_profiles.acunt_name','repositories.repos_name')
+        ->get();
+        // ddd($issues);
+
         return view('Gitissue_view',['issues'=>$issues]);
     }
 
