@@ -53,5 +53,4 @@
                 const cicle_state = `{{ $evaluation['state'] }}`;
             </script>
             <script src="{{ asset('/js/graph.js') }}"></script>
-            <script src="{{ asset('/js/app.js') }}"></script>
 </x-app-layout>
