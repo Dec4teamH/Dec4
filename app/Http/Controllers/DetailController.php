@@ -581,4 +581,9 @@ class DetailController extends Controller
     {
         //
     }
+
+    public function pullrequest()
+    {
+        return view('pullrequest');
+    }
 }
