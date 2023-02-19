@@ -231,7 +231,7 @@ function gh_pullreqest($repos_id){
     $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
     // dd($gh_id[0]->owner_id);
     // DBに格納
-    // dd($Pullreqevents);
+    dd($Pullreqevents);
     foreach($Pullreqevents as $Pullreq_event){
         $pullrequest=$Pullreq_event["payload"]["pull_request"];
         $pullreqIdCheck=DB::table('pullrequests')->where('id', $pullrequest['id'])->exists();
@@ -241,7 +241,7 @@ function gh_pullreqest($repos_id){
         if(!($pullreqIdCheck)){
             // dd(fix_timezone($Pullreq_event["closed_at"]));
         $result=Pullrequests::create(['id'=>$pullrequest["id"],'repositories_id'=>$repos_id,'title'=>$pullrequest["title"],'body'=>$pullrequest["body"],
-        'close_flag'=>tell_close_flag($pullrequest["state"]),'user_id'=>$gh_id[0]->owner_id,'open_date'=>fix_timezone($pullrequest["created_at"]),'close_date'=>fix_timezone($pullrequest["closed_at"]),'merged_at'=>fix_timezone($pullrequest["merged_at"])]);
+        'close_flag'=>tell_close_flag($pullrequest["state"]),'user_id'=>$pullrequest['user']['id'],'open_date'=>fix_timezone($pullrequest["created_at"]),'close_date'=>fix_timezone($pullrequest["closed_at"]),'merged_at'=>fix_timezone($pullrequest["merged_at"])]);
         }
         else{
             // dd(fix_timezone($pullrequest["closed_at"]));

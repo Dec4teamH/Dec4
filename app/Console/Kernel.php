@@ -7,6 +7,7 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
 use App\Models\Repositories;
+use App\Models\Organization;
 use App\Models\Issues;
 use App\Models\Commits;
 use App\Models\Pullrequests;
