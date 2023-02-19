@@ -644,16 +644,14 @@ class GithubController extends Controller
      */
     public function destroy($id)
     {
-        // $id=acunt_name
-        // 名前からgithubのidを取得
-        $gh_profile=DB::table('gh_profiles')->where('acunt_name',$id)->get();
-        //dd($gh_profile);
-        $gh_id=$gh_profile[0]->id;
         //dd($gh_id);
         // idが同じ各テーブルを削除
-        DB::table('repositories')->where('gh_account_id',$gh_id)->delete();
-        DB::table('gh_profiles')->where('id',$gh_id)->delete();
-        DB::table('gh_accounts')->where('gh_account_id',$gh_id)->delete();
+        DB::table('repositories')->where('owner_id',$id)->delete();
+        DB::table('gh_profiles')->where('id',$id)
+        ->update([
+            "access_token"=>null
+        ]);
+        DB::table('gh_accounts')->where('gh_account_id',$id)->delete();
         return redirect()->route('dashboard.index');
     }
 }
