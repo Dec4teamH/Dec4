@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth as FacadesAuth;
 use DB;
 use DateTime;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 
 // commitの取得時間をdatetime型に変換する関数
 function fix_timezone($datetime){
@@ -586,26 +587,36 @@ class DetailController extends Controller
     public function pullrequest($id)
     {
         //dd($id);
-        // 過去1週間分時間を取得
-        $weeks=array();
-        $counts=array();
+        $weeks=array(); // 過去1週間分の日付を格納
+        $counts=array(); // 日付ごとのpullrequestの合計を格納
         for($i=0; $i<7; $i++){
+            // 過去1週間分時間を取得
             $day=Carbon::today()->subDay($i);
             array_push($weeks, $day->format('Y-m-d'));
-            $pullreq=DB::table('pullrequests')
-            ->selectRaw('COUNT(user_id)')
+
+            // 各ユーザのpullrequestの件数取得
+            $pullreq_count=DB::table('pullrequests')
+            ->selectRaw('COUNT(*) as sum')
             ->where('repositories_id', $id)
             ->whereDate('open_date', $day)
             ->groupBy('user_id')->get();
-            //dd($pullreq);
-            array_push($counts, $pullreq);
+            $pullreq_count=$pullreq_count->toArray();
+            if(empty($pullreq_count)){
+                $nest=array();
+                $nest=Arr::add($nest, 'sum', 0);
+                array_push($pullreq_count, $nest);
+            }else{
+                // 本当はorganizationの人数取得+各配列のempty判定が必要
+                $pullreq_count[0] = json_decode(json_encode($pullreq_count[0]),true);
+            }
+            array_push($counts, $pullreq_count);
         }
         // dd($weeks);
-        dd($counts);
+        // dd($counts);
         
 
 
 
-        return view('pullrequest');
+        return view('pullrequest' ,compact('weeks', 'counts'));
     }
 }
