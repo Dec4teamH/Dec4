@@ -17,7 +17,10 @@
         </div>
         <script>
             // 受け取った変数をjsに渡す
-            // コミットの数（仮置き）
+            // ghアカウント名(labels用)
+            const acounts = @json($members);
+
+            // 過去一週間分の日付(datasets->label用)
             const day0 = `{{ $weeks[0] }}`;
             const day1 = `{{ $weeks[1] }}`;
             const day2 = `{{ $weeks[2] }}`;
@@ -26,14 +29,14 @@
             const day5 = `{{ $weeks[5] }}`;
             const day6 = `{{ $weeks[6] }}`;
 
-            // サイクルの状態（仮置き）
-            const sum0 = `{{ $counts[0][0]['sum'] }}`;
-            const sum1 = `{{ $counts[1][0]['sum'] }}`;
-            const sum2 = `{{ $counts[2][0]['sum'] }}`;
-            const sum3 = `{{ $counts[3][0]['sum'] }}`;
-            const sum4 = `{{ $counts[4][0]['sum'] }}`;
-            const sum5 = `{{ $counts[5][0]['sum'] }}`;
-            const sum6 = `{{ $counts[6][0]['sum'] }}`;
+            // プルリク数(datasets->data用)
+            const count0 = @json($counts[0]);
+            const count1 = @json($counts[1]);
+            const count2 = @json($counts[2]);
+            const count3 = @json($counts[3]);
+            const count4 = @json($counts[4]);
+            const count5 = @json($counts[5]);
+            const count6 = @json($counts[6]);
         </script>    
 
     </div>    
