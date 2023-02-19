@@ -14,7 +14,27 @@
         </div>
         <div>
             <canvas id="myChart"></canvas>
-        </div>    
+        </div>
+        <script>
+            // 受け取った変数をjsに渡す
+            // コミットの数（仮置き）
+            const day0 = `{{ $weeks[0] }}`;
+            const day1 = `{{ $weeks[1] }}`;
+            const day2 = `{{ $weeks[2] }}`;
+            const day3 = `{{ $weeks[3] }}`;
+            const day4 = `{{ $weeks[4] }}`;
+            const day5 = `{{ $weeks[5] }}`;
+            const day6 = `{{ $weeks[6] }}`;
+
+            // サイクルの状態（仮置き）
+            const sum0 = `{{ $counts[0][0]['sum'] }}`;
+            const sum1 = `{{ $counts[1][0]['sum'] }}`;
+            const sum2 = `{{ $counts[2][0]['sum'] }}`;
+            const sum3 = `{{ $counts[3][0]['sum'] }}`;
+            const sum4 = `{{ $counts[4][0]['sum'] }}`;
+            const sum5 = `{{ $counts[5][0]['sum'] }}`;
+            const sum6 = `{{ $counts[6][0]['sum'] }}`;
+        </script>    
 
     </div>    
 </x-app-layout>
