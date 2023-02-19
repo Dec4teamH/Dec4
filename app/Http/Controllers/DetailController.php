@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
 use DB;
 use DateTime;
+use Carbon\Carbon;
 
 // commitの取得時間をdatetime型に変換する関数
 function fix_timezone($datetime){
@@ -582,8 +583,29 @@ class DetailController extends Controller
         //
     }
 
-    public function pullrequest()
+    public function pullrequest($id)
     {
+        //dd($id);
+        // 過去1週間分時間を取得
+        $weeks=array();
+        $counts=array();
+        for($i=0; $i<7; $i++){
+            $day=Carbon::today()->subDay($i);
+            array_push($weeks, $day->format('Y-m-d'));
+            $pullreq=DB::table('pullrequests')
+            ->selectRaw('COUNT(user_id)')
+            ->where('repositories_id', $id)
+            ->whereDate('open_date', $day)
+            ->groupBy('user_id')->get();
+            //dd($pullreq);
+            array_push($counts, $pullreq);
+        }
+        // dd($weeks);
+        dd($counts);
+        
+
+
+
         return view('pullrequest');
     }
 }

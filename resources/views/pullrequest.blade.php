@@ -3,6 +3,7 @@
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Pullrequest') }}
         </h2>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
     </x-slot>
 
     <div class="py-12">
@@ -10,4 +11,10 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 {{ __('You are successful!!')}}
             </div>
+        </div>
+        <div>
+            <canvas id="myChart"></canvas>
+        </div>    
+
+    </div>    
 </x-app-layout>

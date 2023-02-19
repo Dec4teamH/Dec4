@@ -33,7 +33,7 @@ Route::middleware('auth')->group(function () {
 Route::resource('dashboard',GithubController::class)->middleware(['auth', 'verified']);
 
 Route::resource('detail',DetailController::class);
-Route::get('/pullrequest', [DetailController::class, 'pullrequest'])->name('detail.pullrequest');
+Route::get('/pullrequest/{id}', [DetailController::class, 'pullrequest']);
 
 Route::resource('repository',RepositoryController::class);
 
