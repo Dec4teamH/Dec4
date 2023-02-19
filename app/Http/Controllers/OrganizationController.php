@@ -231,7 +231,7 @@ function gh_pullreqest($repos_id){
     $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
     // dd($gh_id[0]->owner_id);
     // DBに格納
-    dd($Pullreqevents);
+    // dd($Pullreqevents);
     foreach($Pullreqevents as $Pullreq_event){
         $pullrequest=$Pullreq_event["payload"]["pull_request"];
         $pullreqIdCheck=DB::table('pullrequests')->where('id', $pullrequest['id'])->exists();

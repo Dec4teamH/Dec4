@@ -423,9 +423,13 @@ function gh_repository($id){
 function gh_user($access_token){
 // User情報
         $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
-        //dd($resJsonUser);
+        // dd($resJsonUser);
         // Gh_ profiles
         // githubのaccountidがテーブルに存在しているのか確認
+        // アクセストークンが違った場合
+        if(array_key_exists("message",$resJsonUser)){
+            return false;
+        }
         $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
         if(!($ghIdCheck)){
             // idが存在しないならDBに追加
@@ -448,6 +452,7 @@ function gh_user($access_token){
         }
         $id=DB::table('gh_profiles')->where('access_token',$access_token)->first();
         gh_repository($id->id);
+        return true;
 }
 
 
@@ -568,7 +573,8 @@ class GithubController extends Controller
         // apiでデータ取得
         // DBに格納
 // user
-        gh_user($access_token);
+        $access=gh_user($access_token);
+        if($access){
 // orgs
         gh_organization($access_token);
 
@@ -600,6 +606,11 @@ class GithubController extends Controller
             }
         }
         return redirect()->route("dashboard.index");
+    }else{
+        return redirect()->route("dashboard.index")
+        ->withInput()
+        ->withErrors("access tokenが違います");
+    }
 }
 
     /**
