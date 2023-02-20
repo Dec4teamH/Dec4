@@ -353,7 +353,6 @@ function register_issue($repos_id){
                     'open_date'=>fix_timezone($resJsonIssue['created_at'])
                 ]);
                 }
-                
             }
         }else{
             continue;
@@ -400,6 +399,7 @@ function register_issue($repos_id){
                     'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
                 ]);
                 }else{
+
                 DB::table('issues')
                 ->where('id', $resJsonIssue['id'])
                 ->update([

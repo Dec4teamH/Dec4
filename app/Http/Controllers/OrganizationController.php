@@ -335,6 +335,7 @@ function register_issue($repos_id){
                 Issues::create(['id'=>$resJsonIssue['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
             'user_id'=>$resJsonIssue['user']['id'],'close_flag'=>0,'start_at'=>fix_timezone($start),'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
             }else{
+
                 $check_start=DB::table('issues')->where('id', $resJsonIssue['id'])->get("start_at");
                 // dd($check_start[0]->start_at);
                 if($check_start[0]->start_at===null){
@@ -352,8 +353,7 @@ function register_issue($repos_id){
                     'close_flag'=>0,
                     'open_date'=>fix_timezone($resJsonIssue['created_at'])
                 ]);
-                }
-                
+                }                
             }
         }else{
             continue;
