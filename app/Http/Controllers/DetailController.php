@@ -228,7 +228,7 @@ function tell_close_flag($close_flag){
 // pullrequest情報をDBに登録
 function gh_pullrequest($repos_id){
     $Pullreqevents=event_getter($repos_id,2);
-    $gh_id=DB::table('repositories')->where('id',$repos_id)->get('owner_id');
+    
     // dd($gh_id[0]->owner_id);
     // DBに格納
     // dd($Pullreqevents);
@@ -251,7 +251,8 @@ function gh_pullrequest($repos_id){
                 'close_flag'=>tell_close_flag($pullrequest["state"]),
                 'close_date'=>fix_timezone($pullrequest["closed_at"]),
                 'open_date'=>fix_timezone($pullrequest["created_at"]),
-                'merge_date'=>fix_timezone($pullrequest["merged_at"])
+                'merge_date'=>fix_timezone($pullrequest["merged_at"]),
+                'user_id'=>$pullrequest['user']['id']
             ]);
         }
     }
@@ -400,9 +401,10 @@ function get_commit_data($repos_id){
                 }
             }
         }
+        $commit_time=devide_time($commit->commit_date);
         foreach($pullreqs as $pullreq){
             $merge_date=devide_time($pullreq->merge_date);
-            $commit_time=devide_time($commit->commit_date);
+            
             // dd(abs($merge_date['sec']-$commit_time['sec']));
             if($merge_date['year']===$commit_time['year'])
             {
