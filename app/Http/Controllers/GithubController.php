@@ -329,7 +329,8 @@ function register_issue($repos_id){
                 Issues::create(['id'=>$resJsonIssue['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
             'user_id'=>$resJsonIssue['user']['id'],'close_flag'=>0,'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
             }else{
-                continue;
+                // issueのreopen対策
+                DB::table('issues')->where('id', $resJsonIssue['id'])->update(['close_flag'=>0]);
             }
         }  
 
@@ -354,7 +355,7 @@ function register_issue($repos_id){
                     Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
                 'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
                 }else{
-                    continue;
+                    DB::table('issues')->where('id', $resJsonIssue2['id'])->update(['close_flag'=>1]);
                 }
             }else{
                 continue;

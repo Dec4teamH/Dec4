@@ -14,24 +14,6 @@
                         <button type="submit">更新</button>
                     </form>
                     <canvas id='canvas' width="500" height="400" data="good"></canvas>
-
-                    <div>
-                        @if ($state === 'commit')
-                            <div>
-                                <select id="state" name="selectbox">
-                                    <option value="comgit mit">commit</option>
-                                    <option value="merge">merge</option>
-                                </select>
-                            </div>
-                        @else
-                            <div>
-                                <select id="state" name="selectbox">
-                                    <option value="commit">commit</option>
-                                    <option value="merge" selected>merge</option>
-                                </select>
-                            </div>
-                        @endif
-                    </div>
                 </div>
                 <div>
                     @php
@@ -65,12 +47,10 @@
 
             <script>
                 // 受け取った変数をjsに渡す
-                const state = `{{ $state }}`;
                 // コミットの数（仮置き）
                 const num = `{{ $evaluation['score'] }}`;
                 // サイクルの状態（仮置き）
                 const cicle_state = `{{ $evaluation['state'] }}`;
             </script>
             <script src="{{ asset('/js/graph.js') }}"></script>
-            <script src="{{ asset('/js/app.js') }}"></script>
 </x-app-layout>

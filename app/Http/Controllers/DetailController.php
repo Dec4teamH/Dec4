@@ -322,7 +322,7 @@ function register_issue($repos_id){
                 Issues::create(['id'=>$resJsonIssue['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
             'user_id'=>$resJsonIssue['user']['id'],'close_flag'=>0,'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
             }else{
-                continue;
+                DB::table('issues')->where('id', $resJsonIssue['id'])->update(['close_flag'=>0]);
             }
         }  
 
@@ -347,13 +347,14 @@ function register_issue($repos_id){
                     Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
                 'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
                 }else{
-                    DB::table('issues')->update(['close_flag'=>1]);
+                    DB::table('issues')->where('id', $resJsonIssue2['id'])->update(['close_flag'=>1]);
                 }
             }else{
                 continue;
             }
         }
 }
+// 
 
 function devide_time($datetime){
     // dd($datetime);
@@ -445,7 +446,7 @@ function evaluation($repos_id){
     }else{
         $rate=$close / ($open + $close);
     }
-    //dd($rate);
+    // dd($rate);
 
     // まずはrepository作成日から今日までの差分を求める
     $create_day=Repositories::where('id',$repos_id)->orderBy('created_date','asc')->value('created_date');
@@ -551,7 +552,7 @@ class DetailController extends Controller
         $error=register_commit($id);
         // dd($error);
         // pullrequestの登録
-        gh_pullreqest($id);
+        gh_pullrequest($id);
         // issueの登録
         // dd(event_getter($id,1));
         register_issue($id);
