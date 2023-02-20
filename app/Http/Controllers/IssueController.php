@@ -39,6 +39,7 @@ class IssueController extends Controller
       // date_default_timezone_set('UTC');
       $day = (int)date("Ymd") - 6;
       // ddd($day);
+      $day_ratio = 0.0;
 
       foreach($op_clos_ratios as $ratios){
         // sum open_total and close_total
@@ -60,14 +61,19 @@ class IssueController extends Controller
           }
           // dd($day,$open_date,$close_date);
         }
+        $day_ratio = 100 / ($open_total + $close_total) * $open_total;
         // dd($day,$open_total,$close_total);
+        // dd($day_ratio);
         // end open close count foreach
-        //$op_clos_ratios[$ratios_cnt] = $day_ratio;
+        $op_clos_ratios[$ratios_cnt] = $day_ratio;
         $day++;
+        $ratios_cnt++;
       }
 
+      // dd($op_clos_ratios);
 
-        return view('Gitissue_view',['issues'=>$issues]);
+
+      return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios]);
     }
 
     /**
