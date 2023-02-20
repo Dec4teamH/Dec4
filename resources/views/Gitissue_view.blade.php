@@ -9,22 +9,22 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div>
-              @foreach ($issues as $issue)
-              <tr class="hover:bg-grey-lighter">
-                <td class="py-4 px-6 border-b border-grey-light">
-                  <h3 class="text-left font-bold text-lg text-grey-dark">{{ $issue->repos_name }} {{ $issue->title }} -> {{ $issue->acunt_name }}</h3>
-                      @if ($issue->close_flag === 0)
-                        <h3 class=" font-bold text-lg text-grey-dark">
-                          open!
-                        </h3>
-                      @else
-                        <h3 class=" font-bold text-lg text-grey-dark">
-                          close...
-                        </h3>
-                      @endif
-                </td>
-              </tr>
-              @endforeach
+                  <table border="1">
+                    <thead>
+                      <tr>
+                        @foreach ($weeks as $week)
+                            <th>{{ $week }}　</th>
+                        @endforeach
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        @foreach ($ratios as $ratio)
+                            <td style="text-align: center;">{{ $ratio }}%</td>
+                        @endforeach
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
             </div>
         </div>

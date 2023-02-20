@@ -65,15 +65,16 @@ class IssueController extends Controller
         // dd($day,$open_total,$close_total);
         // dd($day_ratio);
         // end open close count foreach
-        $op_clos_ratios[$ratios_cnt] = $day_ratio;
+        $op_clos_ratios[$ratios_cnt] = round($day_ratio);
         $day++;
         $ratios_cnt++;
       }
 
       // dd($op_clos_ratios);
+      $weeks = ["6day ago","5day ago","4day ago","3day ago","2day ago","1day ago","today"];
 
 
-      return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios]);
+      return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios,'weeks'=>$weeks]);
     }
 
     /**
