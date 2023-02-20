@@ -248,7 +248,7 @@ function gh_pullreqest($repos_id){
         if(!($pullreqIdCheck)){
             // dd(fix_timezone($Pullreq_event["closed_at"]));
         $result=Pullrequests::create(['id'=>$pullrequest["id"],'repositories_id'=>$repos_id,'title'=>$pullrequest["title"],'body'=>$pullrequest["body"],
-        'close_flag'=>tell_close_flag($pullrequest["state"]),'user_id'=>$gh_id[0]->owner_id,'open_date'=>fix_timezone($pullrequest["created_at"]),'close_date'=>fix_timezone($pullrequest["closed_at"]),'merged_at'=>fix_timezone($pullrequest["merged_at"])]);
+        'close_flag'=>tell_close_flag($pullrequest["state"]),'user_id'=>$pullrequest['user']['id'],'open_date'=>fix_timezone($pullrequest["created_at"]),'close_date'=>fix_timezone($pullrequest["closed_at"]),'merged_at'=>fix_timezone($pullrequest["merged_at"])]);
         }
         else{
             // dd(fix_timezone($pullrequest["closed_at"]));
@@ -269,7 +269,7 @@ function register_issue($repos_id){
         $repository=DB::table('repositories')->where("id",$repos_id)->first();
     $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
     // dd($org_prof);
-   
+
     if($org_prof->access_token!=null){
          // アクセストークン取得
     // dd($gh_id[0]->owner_id);
@@ -324,14 +324,45 @@ function register_issue($repos_id){
         
         // DB格納
         foreach($resJsonIssues as $resJsonIssue){
-            $issueIdCheck=DB::table('issues')->where('id', $resJsonIssue['id'])->exists();
+            // dd($resJsonIssue);
+            // dd($resJsonIssue['reactions']);
+            $start_ats=httpRequest('get',$resJsonIssue['reactions']['url'], null, ['Authorization: Bearer ' . $access_token]);
+            // dd($start_at);
+            $start=null;
+            foreach($start_ats as $start_at){
+                if($start_at['content']==="rocket"){
+                    $start=$start_at['created_at'];
+                }
+            }
+            $pullreq_check=DB::table('pullrequests')->where('title',$resJsonIssue['title'])->exists();
+            if(!($pullreq_check)){
+                $issueIdCheck=DB::table('issues')->where('id', $resJsonIssue['id'])->exists();
             if(!($issueIdCheck)){
                 Issues::create(['id'=>$resJsonIssue['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
-            'user_id'=>$resJsonIssue['user']['id'],'close_flag'=>0,'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
+            'user_id'=>$resJsonIssue['user']['id'],'close_flag'=>0,'start_at'=>fix_timezone($start),'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
             }else{
-                // issueのreopen対策
-                DB::table('issues')->where('id', $resJsonIssue['id'])->update(['close_flag'=>0]);
+                $check_start=DB::table('issues')->where('id', $resJsonIssue['id'])->get("start_at");
+                // dd($check_start[0]->start_at);
+                if($check_start[0]->start_at===null){
+                DB::table('issues')
+                ->where('id', $resJsonIssue['id'])
+                ->update([
+                    'close_flag'=>0,
+                    'start_at'=>fix_timezone($start),
+                    'open_date'=>fix_timezone($resJsonIssue['created_at'])
+                ]);
+                }else{
+                DB::table('issues')
+                ->where('id', $resJsonIssue['id'])
+                ->update([
+                    'close_flag'=>0,
+                    'open_date'=>fix_timezone($resJsonIssue['created_at'])
+                ]);
+                }
             }
+        }else{
+            continue;
+        }
         }  
 
         // close用の処理
@@ -350,19 +381,47 @@ function register_issue($repos_id){
         // DB格納
         foreach($resJsonIssues2 as $resJsonIssue2){
             if(count($resJsonIssue2) === 28){
+                $start_ats2=httpRequest('get',$resJsonIssue2['reactions']['url'], null, ['Authorization: Bearer ' . $access_token]);
+                $start2=null;
+                foreach($start_ats2 as $start_at2){
+                if($start_at2['content']==="rocket"){
+                    $start2=$start_at2['created_at'];
+                }
+            }
+            $pullreq_check2=DB::table('pullrequests')->where('title',$resJsonIssue2['title'])->exists();
+            if(!($pullreq_check2)){
                 $issueIdCheck2=DB::table('issues')->where('id', $resJsonIssue2['id'])->exists();
                 if(!($issueIdCheck2)){
                     Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
-                'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
+                'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'start_at'=>fix_timezone($start2),'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
                 }else{
-                    DB::table('issues')->where('id', $resJsonIssue2['id'])->update(['close_flag'=>1]);
+
+                    $check_start2=DB::table('issues')->where('id', $resJsonIssue2['id'])->get("start_at");
+                    if($check_start2[0]->start_at===null){
+                DB::table('issues')
+                ->where('id', $resJsonIssue['id'])
+                ->update([
+                    'close_flag'=>1,
+                    'start_at'=>fix_timezone($start2),
+                    'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
+                ]);
+                }else{
+                DB::table('issues')
+                ->where('id', $resJsonIssue['id'])
+                ->update([
+                    'close_flag'=>1,
+                    'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
+                ]);
                 }
+                }
+            }else{
+                continue;
+            }
             }else{
                 continue;
             }
         }
 }
-
                             // repositry情報をDBに登録
 function gh_repository($id){
 //  repos
@@ -424,9 +483,13 @@ function gh_repository($id){
 function gh_user($access_token){
 // User情報
         $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
-        //dd($resJsonUser);
+        // dd($resJsonUser);
         // Gh_ profiles
         // githubのaccountidがテーブルに存在しているのか確認
+        // アクセストークンが違った場合
+        if(array_key_exists("message",$resJsonUser)){
+            return false;
+        }
         $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
         if(!($ghIdCheck)){
             // idが存在しないならDBに追加
@@ -449,6 +512,7 @@ function gh_user($access_token){
         }
         $id=DB::table('gh_profiles')->where('access_token',$access_token)->first();
         gh_repository($id->id);
+        return true;
 }
 
 
@@ -569,7 +633,8 @@ class GithubController extends Controller
         // apiでデータ取得
         // DBに格納
 // user
-        gh_user($access_token);
+        $access=gh_user($access_token);
+        if($access){
 // orgs
         gh_organization($access_token);
 
@@ -601,6 +666,11 @@ class GithubController extends Controller
             }
         }
         return redirect()->route("dashboard.index");
+    }else{
+        return redirect()->route("dashboard.index")
+        ->withInput()
+        ->withErrors("access tokenが違います");
+    }
 }
 
     /**
@@ -645,16 +715,14 @@ class GithubController extends Controller
      */
     public function destroy($id)
     {
-        // $id=acunt_name
-        // 名前からgithubのidを取得
-        $gh_profile=DB::table('gh_profiles')->where('acunt_name',$id)->get();
-        //dd($gh_profile);
-        $gh_id=$gh_profile[0]->id;
         //dd($gh_id);
         // idが同じ各テーブルを削除
-        DB::table('repositories')->where('gh_account_id',$gh_id)->delete();
-        DB::table('gh_profiles')->where('id',$gh_id)->delete();
-        DB::table('gh_accounts')->where('gh_account_id',$gh_id)->delete();
+        DB::table('repositories')->where('owner_id',$id)->delete();
+        DB::table('gh_profiles')->where('id',$id)
+        ->update([
+            "access_token"=>null
+        ]);
+        DB::table('gh_accounts')->where('gh_account_id',$id)->delete();
         return redirect()->route('dashboard.index');
     }
 }

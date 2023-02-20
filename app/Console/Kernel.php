@@ -7,6 +7,7 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
 use App\Models\Repositories;
+use App\Models\Organization;
 use App\Models\Issues;
 use App\Models\Commits;
 use App\Models\Pullrequests;
@@ -239,7 +240,7 @@ function gh_pullreqest($repos_id){
         if(!($pullreqIdCheck)){
             // dd(fix_timezone($Pullreq_event["closed_at"]));
         $result=Pullrequests::create(['id'=>$pullrequest["id"],'repositories_id'=>$repos_id,'title'=>$pullrequest["title"],'body'=>$pullrequest["body"],
-        'close_flag'=>tell_close_flag($pullrequest["state"]),'user_id'=>$gh_id[0]->owner_id,'open_date'=>fix_timezone($pullrequest["created_at"]),'close_date'=>fix_timezone($pullrequest["closed_at"]),'merged_at'=>fix_timezone($pullrequest["merged_at"])]);
+        'close_flag'=>tell_close_flag($pullrequest["state"]),'user_id'=>$pullrequest['user']['id'],'open_date'=>fix_timezone($pullrequest["created_at"]),'close_date'=>fix_timezone($pullrequest["closed_at"]),'merged_at'=>fix_timezone($pullrequest["merged_at"])]);
         }
         else{
             // dd(fix_timezone($pullrequest["closed_at"]));
