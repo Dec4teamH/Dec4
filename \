@@ -31,39 +31,17 @@ class IssueController extends Controller
         ->join('repositories', 'repositories_id' , '=', 'repositories.id')
         ->select('issues.*', 'gh_profiles.acunt_name','repositories.repos_name')
         ->get();
-        // ddd($issues);
+      // ddd($issues);
 
       $op_clos_ratios = array_fill(0,7,0);
       // ddd($op_clos_ratio);
       $ratios_cnt = 0;
       // date_default_timezone_set('UTC');
-      $day = (int)date("Ymd") - 6;
-      // ddd($day);
+      $today = (int) date("Ymd");
+      ddd($today);
 
-      foreach($op_clos_ratios as $ratios){
-        // sum open_total and close_total
-        $open_total = 0;
-        $close_total = 0;
-        foreach($issues as $issue){
-          // init values
-          
-          $open_date = (int)str_replace('-','',substr($issue->open_date, 0, 10));
-          $close_date = (int)str_replace('-','',substr($issue->close_date, 0, 10));
-
-          if($open_date > $day){
-            // まだ開いていないので計算しない
-          }
-          else if($day >= $open_date && $close_date >= $day || $day >= $open_date && $close_date == 0){
-            $open_total++;
-          }else{
-            $close_total++;
-          }
-          // dd($day,$open_date,$close_date);
-        }
-        // dd($day,$open_total,$close_total);
-        // end open close count foreach
-        //$op_clos_ratios[$ratios_cnt] = $day_ratio;
-        $day++;
+      foreach($op_clos_ratio as $ratios){
+        $op_clos_ratios[$ratios_cnt] = $day_ratio;
       }
 
 
