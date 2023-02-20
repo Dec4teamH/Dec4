@@ -7,8 +7,8 @@ const myChart = new Chart(ctx, {
         labels: acounts,
         datasets: [
             {
-                label: `${day6}`,
-                data: `${count6}`,
+                label: day6,
+                data: count6,
                 backgroundColor: [
                     "rgba(255, 99, 132, 0.2)",
                 ],
@@ -17,8 +17,8 @@ const myChart = new Chart(ctx, {
                 ],
                 borderWidth: 1,
             }, {
-                label: `${day5}`,
-                data: `${count5}`,
+                label: day5,
+                data: count5,
                 backgroundColor: [
                     "rgba(54, 162, 235, 0.2)",
                 ],
@@ -27,8 +27,8 @@ const myChart = new Chart(ctx, {
                 ],
                 borderWidth: 1,
             }, {
-                label: `${day4}`,
-                data: `${count4}`,
+                label: day4,
+                data: count4,
                 backgroundColor: [
                     "rgba(255, 206, 86, 0.2)",
                 ],
@@ -37,8 +37,8 @@ const myChart = new Chart(ctx, {
                 ],
                 borderWidth: 1,
             }, {
-                label: `${day3}`,
-                data: `${count3}`,
+                label: day3,
+                data: count3,
                 backgroundColor: [
                     "rgba(75, 192, 192, 0.2)",
                 ],
@@ -48,8 +48,8 @@ const myChart = new Chart(ctx, {
                 ],
                 borderWidth: 1,
             }, {
-                label: `${day2}`,
-                data: `${count2}`,
+                label: day2,
+                data: count2,
                 backgroundColor: [
                     "rgba(153, 102, 255, 0.2)",
                 ],
@@ -58,8 +58,8 @@ const myChart = new Chart(ctx, {
                 ],
                 borderWidth: 1,
             }, {
-                label: `${day1}`,
-                data: `${count1}`,
+                label: day1,
+                data: count1,
                 backgroundColor: [
                     "rgba(255, 159, 64, 0.2)",
                 ],
@@ -68,8 +68,8 @@ const myChart = new Chart(ctx, {
                 ],
                 borderWidth: 1,
             }, {
-                label: `${day0}`,
-                data: `${count0}`,
+                label: day0,
+                data: count0,
                 backgroundColor: [
                     "rgba(128, 128, 128, 0.2)",
                 ],
