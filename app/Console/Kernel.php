@@ -256,7 +256,7 @@ function gh_pullreqest($repos_id){
     }
 }
 
-/// issueの登録
+// issueの登録
 function register_issue($repos_id){ 
         $repository=DB::table('repositories')->where("id",$repos_id)->first();
     $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
