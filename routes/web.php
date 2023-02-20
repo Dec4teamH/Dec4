@@ -6,7 +6,6 @@ use App\Http\Controllers\GithubController;
 use App\Http\Controllers\DetailController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\RepositoryController;
-use App\Http\Controllers\IssueController;
 use Illuminate\Cache\Repository;
 
 /*
@@ -38,8 +37,6 @@ Route::resource('detail',DetailController::class);
 Route::resource('repository',RepositoryController::class);
 
 Route::resource('organization',OrganizationController::class);
-
-Route::resource('issue',IssueController::class);
 
 // graph commit表示のルーテイング
 Route::get('/graph/commit',function(){
