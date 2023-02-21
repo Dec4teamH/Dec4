@@ -9,6 +9,7 @@ use App\Models\Repositories;
 use App\Models\Issues;
 use App\Models\Commits;
 use App\Models\Pullrequests;
+use App\Models\Organization;
 use Dotenv\Validator as DotenvValidator;
 use App\Models\User;
 use Auth;
@@ -16,6 +17,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
 use DB;
 use DateTime;
+use Carbon\Carbon;
+use Illuminate\Support\Arr;
 
 // commitの取得時間をdatetime型に変換する関数
 function fix_timezone($datetime){
@@ -353,6 +356,7 @@ function register_issue($repos_id){
                     'open_date'=>fix_timezone($resJsonIssue['created_at'])
                 ]);
                 }
+
             }
         }else{
             continue;
@@ -643,5 +647,98 @@ class DetailController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function pullrequest($id)
+    {
+        //dd($id);
+        $owner_id=Repositories::where('id', $id)->value('owner_id');
+        //dd($owner_id);
+        $organizationCheck=Organization::where('organization_id', $owner_id)->exists();
+        //dd($organizationCheck);
+        if(!($organizationCheck)){
+            // << 個人リポジトリ用の処理 >>
+
+            // githubのアカウント名を取得
+            $members=array();
+            $name=Repositories::where('owner_id', $owner_id)->value('owner_name');
+            // dd(gettype($name));
+            array_push($members, $name);
+            // dd($members);
+
+
+            $weeks=array(); // 過去1週間分の日付
+            $counts=array(); // 日付ごとのpullrequestの合計を格納
+            for($i=0; $i<7; $i++){
+                // 過去1週間分時間を取得
+                $day=Carbon::today()->subDay($i);
+                array_push($weeks, $day->format('Y-m-d'));
+
+
+                // 各ユーザのpullrequestの件数取得
+                $user_pullrequest=DB::table('pullrequests')
+                ->where('repositories_id', $id)
+                ->whereDate('open_date', $day)
+                ->get();
+                // dd(count($user_pullrequest)); // 空の時は0を返す
+                $nest=array();
+                array_push($nest, count($user_pullrequest));
+                array_push($counts, $nest);
+            }
+        }else{
+            // << organization用の処理 >>
+
+            // githubのアカウント名を取得
+            $members=array();
+            $orgs_info=DB::table('organizations')
+            ->where('organization_id', $owner_id)
+            ->orderBy('gh_account_id', 'asc')
+            ->get('gh_account_id')
+            ->toArray();
+            // dd($orgs_info); // orgsのgh_account_id
+            // dd(count($orgs_info)); // orgsの人数
+            for($i=0; $i<count($orgs_info); $i++){
+                $name=Gh_profiles::where('id', $orgs_info[$i]->gh_account_id)
+                ->value('acunt_name');
+                array_push($members, $name);
+
+            }
+            // dd($members);
+
+
+            $weeks=array(); // 過去1週間分の日付を格納
+            $counts=array(); // 日付ごとのpullrequestの合計を格納
+            for($j=0; $j<7; $j++){
+                // 過去1週間分時間を取得
+                $day=Carbon::today()->subDay($j);
+                array_push($weeks, $day->format('Y-m-d'));
+
+                // 各ユーザのpullrequestの件数取得
+                $nest=array();
+                for($k=0; $k<count($orgs_info); $k++){
+                    $user_pullrequest=DB::table('pullrequests')
+                    ->where('repositories_id', $id)
+                    ->whereDate('open_date', $day)
+                    ->where('user_id', $orgs_info[$k]->gh_account_id)
+                    ->get();
+
+                    array_push($nest, count($user_pullrequest));
+                }
+                array_push($counts, $nest);
+
+            }
+
+
+
+ 
+        }
+        // dd($members);
+        // dd($weeks);
+        // dd($counts);
+        
+
+
+
+        return view('pullrequest' ,compact('members','weeks', 'counts'));
     }
 }
