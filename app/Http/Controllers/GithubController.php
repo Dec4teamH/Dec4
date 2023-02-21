@@ -334,12 +334,19 @@ function register_issue($repos_id){
                     $start=$start_at['created_at'];
                 }
             }
+            if($resJsonIssue['assignee']===null){
+                $assignee=$resJsonIssue['user']['id'];
+            }else{
+                $assignee=$resJsonIssue['assignee']['id'];
+                // dd($assignee);
+            }
+            
             $pullreq_check=DB::table('pullrequests')->where('title',$resJsonIssue['title'])->exists();
             if(!($pullreq_check)){
                 $issueIdCheck=DB::table('issues')->where('id', $resJsonIssue['id'])->exists();
             if(!($issueIdCheck)){
                 Issues::create(['id'=>$resJsonIssue['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
-            'user_id'=>$resJsonIssue['user']['id'],'close_flag'=>0,'start_at'=>fix_timezone($start),'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
+            'user_id'=>$resJsonIssue['user']['id'],'assign_id'=>$assignee,'close_flag'=>0,'start_at'=>fix_timezone($start),'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
             }else{
                 $check_start=DB::table('issues')->where('id', $resJsonIssue['id'])->get("start_at");
                 // dd($check_start[0]->start_at);
@@ -347,6 +354,7 @@ function register_issue($repos_id){
                 DB::table('issues')
                 ->where('id', $resJsonIssue['id'])
                 ->update([
+                    'assign_id'=>$assignee,
                     'close_flag'=>0,
                     'start_at'=>fix_timezone($start),
                     'open_date'=>fix_timezone($resJsonIssue['created_at'])
@@ -355,6 +363,7 @@ function register_issue($repos_id){
                 DB::table('issues')
                 ->where('id', $resJsonIssue['id'])
                 ->update([
+                    'assign_id'=>$assignee,
                     'close_flag'=>0,
                     'open_date'=>fix_timezone($resJsonIssue['created_at'])
                 ]);
@@ -389,18 +398,25 @@ function register_issue($repos_id){
                     $start2=$start_at2['created_at'];
                 }
             }
+            if($resJsonIssue['assignee']===null){
+                $assignee=$resJsonIssue['user']['id'];
+            }else{
+                $assignee=$resJsonIssue['assignee']['id'];
+                // dd($assignee);
+            }
             $pullreq_check2=DB::table('pullrequests')->where('title',$resJsonIssue2['title'])->exists();
             if(!($pullreq_check2)){
                 $issueIdCheck2=DB::table('issues')->where('id', $resJsonIssue2['id'])->exists();
                 if(!($issueIdCheck2)){
                     Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
-                'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'start_at'=>fix_timezone($start2),'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
+                'user_id'=>$resJsonIssue2['user']['id'],'assign_id'=>$assignee,'close_flag'=>1,'start_at'=>fix_timezone($start2),'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
                 }else{
                     $check_start2=DB::table('issues')->where('id', $resJsonIssue2['id'])->get("start_at");
                     if($check_start2[0]->start_at===null){
                 DB::table('issues')
-                ->where('id', $resJsonIssue['id'])
+                ->where('id', $resJsonIssue2['id'])
                 ->update([
+                    'assign_id'=>$assignee,
                     'close_flag'=>1,
                     'start_at'=>fix_timezone($start2),
                     'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
@@ -409,6 +425,7 @@ function register_issue($repos_id){
                 DB::table('issues')
                 ->where('id', $resJsonIssue['id'])
                 ->update([
+                    'assign_id'=>$assignee,
                     'close_flag'=>1,
                     'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
                 ]);
