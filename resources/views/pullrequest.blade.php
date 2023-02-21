@@ -1,8 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Pullrequest') }}
-        </h2>
+        <div class="flex">
+            <a href="{{ route('detail.show', $id) }}">
+                {{ __('Index') }}
+            </a>
+            <!-- Pullrequest Links -->
+            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                <a href="/pullrequest/{{$id}}">
+                    {{ __('Pullrequest') }}
+                </a>
+            </div>
+        </div>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </x-slot>
 
