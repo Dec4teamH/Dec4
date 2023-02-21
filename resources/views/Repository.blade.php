@@ -13,7 +13,6 @@
                         <ul>
                             <li>
                                 <a href="{{ route('detail.show', $repository->id) }}">{{ $repository->repos_name }}</a>
-
                             </li>
                         </ul>
                     @endforeach

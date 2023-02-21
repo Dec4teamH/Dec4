@@ -1,62 +1,63 @@
 <?php
 
-namespace App\Console;
+namespace App\Http\Controllers;
 
-use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Http\Request;
+use Validator;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
-use App\Models\Repositories;
 use App\Models\Organization;
-use App\Models\Issues;
+use App\Models\Repositories;
 use App\Models\Commits;
+use App\Models\Issues;
 use App\Models\Pullrequests;
-use App\Models\User;
-use  Illuminate\Support\Facades\Log;
-use Auth;
 use DB;
-
-// commitの取得時間をdatetime型に変換する関数
-function fix_timezone($datetime){
-    $year=mb_substr($datetime,0,4);
-    $month=mb_substr($datetime,5,2);
-    $day=mb_substr($datetime,8,2);
-    $hour=mb_substr($datetime,11,2);
-    $min=mb_substr($datetime,14,2);
-    $sec=mb_substr($datetime,17,2);
-    
+// githubapiから取得したじかんをDBに格納できるtimestampがたに変換
+// 0000-00-00T00:00:00Zを日本時間に直すかは考える
+function fix_timezone($timestamp){
+    if($timestamp!=null){
+    $year=mb_substr($timestamp,0,4);
+    $month=mb_substr($timestamp,5,2);
+    $day=mb_substr($timestamp,8,2);
+    $hour=mb_substr($timestamp,11,2);
+    $min=mb_substr($timestamp,14,2);
+    $sec=mb_substr($timestamp,17,2);
     $fixed_time=$year."-".$month."-".$day." ".$hour.":".$min.":".$sec;
-    if($fixed_time=="-- ::"){return null;}
     return $fixed_time;
+}else{
+    return null;
+}
 }
 
 // curlの情報をjson形式でreturn 
-function httpRequest($curlType, $url, $params = null, $header = null){
-    $headerParams = $header;
-    $curl = curl_init($url);
+function httpRequest($curlType, $url, $params = null, $header = null)
+                            {
+                                $headerParams = $header;
+                                $curl = curl_init($url);
+                            
+                                if ($curlType == 'post') {
+                                    curl_setopt($curl, CURLOPT_POST, true);
+                                    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
+                                } else {
+                                    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+                                }
+                            
+                                curl_setopt($curl, CURLOPT_USERAGENT, 'USER_AGENT');
+                                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // オレオレ証明書対策
+                                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false); //
+                                curl_setopt($curl, CURLOPT_COOKIEJAR, 'cookie');
+                                curl_setopt($curl, CURLOPT_COOKIEFILE, 'tmp');
+                                curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true); // Locationヘッダを追跡
+                                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                                curl_setopt($curl, CURLOPT_HTTPHEADER, $headerParams);
+                                $output = curl_exec($curl);
+                                curl_close($curl);
+                                // 返却地をJsonでデコード
+                                $Output= json_decode($output, true);
+                                return $Output;
+                            }
 
-    if ($curlType == 'post') {
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
-    } else {
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
-    }
-
-    curl_setopt($curl, CURLOPT_USERAGENT, 'USER_AGENT');
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // オレオレ証明書対策
-    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false); //
-    curl_setopt($curl, CURLOPT_COOKIEJAR, 'cookie');
-    curl_setopt($curl, CURLOPT_COOKIEFILE, 'tmp');
-    curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true); // Locationヘッダを追跡
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl, CURLOPT_HTTPHEADER, $headerParams);
-    $output = curl_exec($curl);
-    curl_close($curl);
-    // 返却地をJsonでデコード
-    $Output= json_decode($output, true);
-    return $Output;
-}
-
+                            
 function event_getter($repos_id,$get_id){
     $repository=DB::table('repositories')->where("id",$repos_id)->first();
     $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
@@ -256,12 +257,13 @@ function gh_pullreqest($repos_id){
     }
 }
 
+
 // issueの登録
 function register_issue($repos_id){ 
         $repository=DB::table('repositories')->where("id",$repos_id)->first();
     $org_prof=DB::table('gh_profiles')->where('id',$repository->owner_id)->first();
     // dd($org_prof);
-   
+
     if($org_prof->access_token!=null){
          // アクセストークン取得
     // dd($gh_id[0]->owner_id);
@@ -316,13 +318,47 @@ function register_issue($repos_id){
         
         // DB格納
         foreach($resJsonIssues as $resJsonIssue){
-            $issueIdCheck=DB::table('issues')->where('id', $resJsonIssue['id'])->exists();
+            // dd($resJsonIssue);
+            // dd($resJsonIssue['reactions']);
+            $start_ats=httpRequest('get',$resJsonIssue['reactions']['url'], null, ['Authorization: Bearer ' . $access_token]);
+            // dd($start_at);
+            $start=null;
+            foreach($start_ats as $start_at){
+                if($start_at['content']==="rocket"){
+                    $start=$start_at['created_at'];
+                }
+            }
+            $pullreq_check=DB::table('pullrequests')->where('title',$resJsonIssue['title'])->exists();
+            if(!($pullreq_check)){
+                $issueIdCheck=DB::table('issues')->where('id', $resJsonIssue['id'])->exists();
             if(!($issueIdCheck)){
                 Issues::create(['id'=>$resJsonIssue['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
-            'user_id'=>$resJsonIssue['user']['id'],'close_flag'=>0,'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
+            'user_id'=>$resJsonIssue['user']['id'],'close_flag'=>0,'start_at'=>fix_timezone($start),'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
             }else{
-                continue;
+
+                $check_start=DB::table('issues')->where('id', $resJsonIssue['id'])->get("start_at");
+                // dd($check_start[0]->start_at);
+                if($check_start[0]->start_at===null){
+                DB::table('issues')
+                ->where('id', $resJsonIssue['id'])
+                ->update([
+                    'close_flag'=>0,
+                    'start_at'=>fix_timezone($start),
+                    'open_date'=>fix_timezone($resJsonIssue['created_at'])
+                ]);
+                }else{
+                DB::table('issues')
+                ->where('id', $resJsonIssue['id'])
+                ->update([
+                    'close_flag'=>0,
+                    'open_date'=>fix_timezone($resJsonIssue['created_at'])
+                ]);
+                }                
+
             }
+        }else{
+            continue;
+        }
         }  
 
         // close用の処理
@@ -341,19 +377,49 @@ function register_issue($repos_id){
         // DB格納
         foreach($resJsonIssues2 as $resJsonIssue2){
             if(count($resJsonIssue2) === 28){
+                $start_ats2=httpRequest('get',$resJsonIssue2['reactions']['url'], null, ['Authorization: Bearer ' . $access_token]);
+                $start2=null;
+                foreach($start_ats2 as $start_at2){
+                if($start_at2['content']==="rocket"){
+                    $start2=$start_at2['created_at'];
+                }
+            }
+            $pullreq_check2=DB::table('pullrequests')->where('title',$resJsonIssue2['title'])->exists();
+            if(!($pullreq_check2)){
                 $issueIdCheck2=DB::table('issues')->where('id', $resJsonIssue2['id'])->exists();
                 if(!($issueIdCheck2)){
                     Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
-                'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
+                'user_id'=>$resJsonIssue2['user']['id'],'close_flag'=>1,'start_at'=>fix_timezone($start2),'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
                 }else{
-                    continue;
+
+                    $check_start2=DB::table('issues')->where('id', $resJsonIssue2['id'])->get("start_at");
+                    if($check_start2[0]->start_at===null){
+                DB::table('issues')
+                ->where('id', $resJsonIssue2['id'])
+                ->update([
+                    'close_flag'=>1,
+                    'start_at'=>fix_timezone($start2),
+                    'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
+                ]);
+                }else{
+                DB::table('issues')
+                ->where('id', $resJsonIssue['id'])
+                ->update([
+                    'close_flag'=>1,
+                    'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
+                ]);
                 }
+                }
+            }else{
+                continue;
+            }
             }else{
                 continue;
             }
         }
 }
 // 
+                            // repositry情報をDBに登録
 function gh_repository($id){
 //  repos
         $org_inf=DB::table('gh_profiles')->where('id',$id)->first();
@@ -432,6 +498,11 @@ function gh_user($access_token){
                 'access_token'=>$access_token
             ]);
         }
+        // gh_accountテーブルでも確認
+        $gh_accountCheck=DB::table('gh_accounts')->where('gh_account_id', $resJsonUser['id'])->where('user_id',Auth::user()->id)->exists();
+        if(!($gh_accountCheck)){
+            $result=Gh_accounts::create(['user_id'=>Auth::user()->id,'gh_account_id'=>$resJsonUser['id']]);
+        }
         $id=DB::table('gh_profiles')->where('access_token',$access_token)->first();
         gh_repository($id->id);
 }
@@ -493,57 +564,118 @@ function gh_organization($access_token){
 
 }
 
-class Kernel extends ConsoleKernel
+class OrganizationController extends Controller
 {
     /**
-     * Define the application's command schedule.
+     * Display a listing of the resource.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
-     * @return void
+     * @return \Illuminate\Http\Response
      */
-    protected function schedule(Schedule $schedule)
+    public function index()
     {
-        $schedule->call(function(){
-            $ids=DB::table('repositories')->get();
-            // dd($ids);
-            foreach ($ids as $id){
-                // dd($id);
-            // commitの登録
-        $error=register_commit($id->id);
-        // dd($error);
-        // pullrequestの登録
-        gh_pullreqest($id->id);
-        // issueの登録
-        // dd(event_getter($id,1));
-        register_issue($id->id);
-            }
-        $access_tokens=DB::table('gh_profiles')->where('access_token',"!=","null")->get();
-        foreach($access_tokens as $access_token){ 
- // user
-        gh_user($access_token->access_token);
-// orgs
-        gh_organization($access_token->access_token);
-        }
-
-        })->name("github_api fetch" )->withoutOverlapping()->daily()
-        ->onSuccess(function () {    
-            Log::alert('成功');
-                })
-                ->onFailure(function () {   
-                    Log::error('error');
-                });
-        // $schedule->command('inspire')->hourly();
+        //
     }
 
     /**
-     * Register the commands for the application.
+     * Show the form for creating a new resource.
      *
-     * @return void
+     * @return \Illuminate\Http\Response
      */
-    protected function commands()
+    public function create()
     {
-        $this->load(__DIR__.'/Commands');
+        //
+    }
 
-        require base_path('routes/console.php');
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $orgs=DB::table('organizations')->where('gh_account_id',$id)->get();
+        // dd($orgs);
+        $gh_profs=array();
+        foreach ($orgs as $org){
+            $gh_profs[]=DB::table('gh_profiles')->where('id',$org->organization_id)->first();
+        }
+        // dd($gh_profs);
+        return view("organization",["gh_profs"=>$gh_profs,"id"=>$id]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $access_token=DB::table('gh_profiles')->where('id',$id)->first();
+        // dd($access_token);
+        gh_organization($access_token->access_token);
+        gh_repository($id);
+        // commitの登録
+        $ids=DB::table('repositories')->where('owner_id',$id)->get();
+        foreach($ids as $repos_id){
+            // dd($repos_id);
+        $error=register_commit($repos_id->id);
+        // dd($error);
+        // pullrequestの登録
+        gh_pullreqest($repos_id->id);
+        // issueの登録
+        // dd(event_getter($repos_id,1));
+        register_issue($repos_id->id);
+        }
+        $organization_ids=DB::table('organizations')->where('gh_account_id',$id)->get();
+        foreach($organization_ids as $organization_id){
+            // dd($organization_id);]
+            $repos_ids=DB::table('repositories')->where('owner_id',$organization_id->organization_id)->get();
+            foreach($repos_ids as $repos_id){
+            $error=register_commit($repos_id->id);
+        // dd($error);
+        // pullrequestの登録
+        gh_pullreqest($repos_id->id);
+        // issueの登録
+        // dd(event_getter($repos_id->id,1));
+        register_issue($repos_id->id);
+            }
+        }
+        return redirect()->route('organization.show',$id);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
     }
 }
