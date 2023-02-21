@@ -675,6 +675,6 @@ class DetailController extends Controller
 
 
 
-        return view('pullrequest' ,compact('members','weeks', 'counts'));
+        return view('pullrequest' ,compact('id','members','weeks', 'counts'));
     }
 }
