@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('body')->nullable();
             $table->integer('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('gh_profiles')->cascadeOnDelete();
+            $table->integer('assign_id')->nullable();
+            $table->foreign('assign_id')->references('id')->on('gh_profiles')->cascadeOnDelete();
             $table->boolean('close_flag');
             $table->timestamp('start_at')->nullable();
             $table->timestamp('open_date');
@@ -42,5 +44,7 @@ return new class extends Migration
         $table->dropColumn(['repositories_id']);
         $table->dropForeign(['user_id']);
         $table->dropColumn(['user_id']);
+        $table->dropForeign(['assign_id']);
+        $table->dropColumn(['assign_id']);
     }
 };
