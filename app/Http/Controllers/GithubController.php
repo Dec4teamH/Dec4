@@ -106,12 +106,15 @@ function event_getter($repos_id,$get_id){
     // dd($user_name);
     // dd($name[0]->repos_name);
     // dd($access_token);
-    $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
-    // dd($events);
     $Commit_event=array();
     $Issues_event=array();
     $Pullreq_event=array();
-    foreach ($events as $event){
+    $i=1;
+    while(true){ 
+    $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events?per_page=100&page=".$i, null, ['Authorization: Bearer ' . $access_token]);
+    // dd($events);
+    if(!(array_key_exists("message",$events))){
+        foreach ($events as $event){
         // dd($event["type"]);
         // commit
         
@@ -132,7 +135,14 @@ function event_getter($repos_id,$get_id){
         else{
             // dd($event);
         }
-    }
+    }  
+    $i++;
+}else{
+    break;
+}
+}
+    // dd($Pullreq_event);
+    // dd($Commit_event);
     if($get_id===0){return  array_reverse($Commit_event);}
     else if($get_id===1){return array_reverse($Issues_event);}
     else if($get_id===2){return array_reverse($Pullreq_event);}
