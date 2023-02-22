@@ -10,6 +10,11 @@
                     {{ __('Pullrequest') }}
                 </a>
             </div>
+            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                <a href="{{ route('issue.show', $id) }}">
+                    {{ __('Issue') }}
+                </a>
+            </div>
         </div>
     </x-slot>
 

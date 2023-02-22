@@ -10,6 +10,12 @@
                     {{ __('Pullrequest') }}
                 </a>
             </div>
+          <!-- Issue Link -->
+          <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+              <a href="{{ route('issue.index', $id) }}">
+                  {{ __('Issue') }}
+              </a>
+          </div>
         </div>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </x-slot>

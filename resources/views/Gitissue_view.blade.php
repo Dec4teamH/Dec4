@@ -1,10 +1,25 @@
-<html>
-<head>
-
-</head>
-<body>
 
 <x-app-layout>
+  <x-slot name="header">
+      <div class="flex">
+          <a href="{{ route('detail.show', $id) }}">
+              {{ __('Index') }}
+          </a>
+          <!-- Pullrequest Links -->
+          <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+              <a href="/pullrequest/{{$id}}">
+                  {{ __('Pullrequest') }}
+              </a>
+          </div>
+          <!-- Issue Link -->
+          <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+              <a href="{{ route('issue.index', $id) }}">
+                  {{ __('Issue') }}
+              </a>
+          </div>
+      </div>
+  </x-slot>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -78,5 +93,3 @@
     );
   
 </script>
-
-</html>
