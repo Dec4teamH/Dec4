@@ -6,7 +6,7 @@
             </a>
             <!-- Pullrequest Links -->
             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                <a href="/pullrequest/{{$id}}">
+                <a href="/pullrequest/{{ $id }}">
                     {{ __('Pullrequest') }}
                 </a>
             </div>
