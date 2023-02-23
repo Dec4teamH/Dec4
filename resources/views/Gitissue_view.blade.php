@@ -54,19 +54,29 @@
         <?php
         $json_weeks = json_encode($weeks);
         $json_ratios = json_encode($ratios);
+        $json_start_ratios = json_encode($start_ratios);
         ?>
 
         var labels = <?php echo $json_weeks; ?>;
-        var users = <?php echo $json_ratios; ?>;
+        var op_ratios = <?php echo $json_ratios; ?>;
+        var start_ratios = <?php echo $json_start_ratios; ?>;
 
         const data = {
             labels: labels,
-            datasets: [{
+            datasets: [
+              {
                 label: 'Open issue ration',
                 backgroundColor: 'rgb(255, 99, 132)',
                 borderColor: 'rgb(255, 99, 132)',
-                data: users,
-            }]
+                data: op_ratios,
+              },
+              {
+                label: 'Start issue ration',
+                backgroundColor: 'rgb(160, 217, 262)',
+                borderColor: 'rgb(160, 217, 262)',
+                data: start_ratios,
+              }
+            ]
         };
 
         const config = {
