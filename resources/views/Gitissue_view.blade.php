@@ -43,7 +43,6 @@
                     </tbody>
                   </table> -->
             </div>
-            {{ $calendar[0][0]->id }}
         </div>
     </div>
     </div>
@@ -52,7 +51,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const calendar_started = `{{ $calendar[0][0]->id }}`;
+    // event要のデータ検討
+    let calendar_started_title = `{{ $calendar[0] }}`;
+    let calendar_started_start = `{{ $calendar[1] }}`;
+    let calendar_started_finish = `{{ $calendar[2] }}`;
+    let calendar_fnished_title = `{{ $calendar[3] }}`;
+    let calendar_fnished_start = `{{ $calendar[4] }}`;
+    let calendar_fnished_finish = `{{ $calendar[5] }}`;
 </script>
 <script type="text/javascript">
     <?php

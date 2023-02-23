@@ -140,7 +140,7 @@ class IssueController extends Controller
     public function show($id)
     {
       $data=calendar($id);
-        dd($data);
+        // dd($data);
       $issues = DB::table('issues')
         ->where('repositories_id',$id)
         ->join('gh_profiles','user_id', '=', 'gh_profiles.id')
