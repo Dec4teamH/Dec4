@@ -503,7 +503,7 @@ function get_commit_data($repos_id){
 }
 
 function evaluation($repos_id){
-    // issue完了率
+    // << issue完了率 >>
     $open=Issues::where('repositories_id',$repos_id)->where('close_flag', 0)->count();
     $close=Issues::where('repositories_id',$repos_id)->where('close_flag', 1)->count();
     // dd($open);
@@ -515,6 +515,8 @@ function evaluation($repos_id){
     }
     // dd($rate);
 
+
+    // << 平均プルリクエスト数 >>
     // まずはrepository作成日から今日までの差分を求める
     $create_day=Repositories::where('id',$repos_id)->orderBy('created_date','asc')->value('created_date');
     //dd($create_day);
@@ -532,6 +534,36 @@ function evaluation($repos_id){
     $pullreq_eva=($pullreq_count/$diff->days)/3;
     //dd($pullreq_eva);
 
+
+    // << issueの取り掛かり時間の平均 >>
+
+    $issues=DB::table('issues')
+    ->select('open_date, start_at')
+    ->where('repositories_id',$repos_id)
+    ->get()
+    ->toArray();
+    dd($issues);
+
+    for($i; $i<count($issues); i++){
+        $sum=0;
+        if(($issues[$i]->start_at)===null){
+            $open=$issues[$i]->open_date;
+            $start$issues[$i]->start_at;
+            $diffday=$open->diffInDays($start);
+            $sum+=$diffday;
+        }else{
+            $open=$issues[$i]->open_date;
+            $diffday=$open->diffInDays($start);
+            $sum+=$diffday;
+        }
+    }
+    $start_ave=$sum/count($issues);
+    dd($start_ave);
+
+
+
+
+    // << スコア計算・評価 >>
     $score=$rate+$pullreq_eva;
     // dd($score);
 
