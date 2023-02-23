@@ -395,10 +395,10 @@ function register_issue($repos_id){
                     $start2=$start_at2['created_at'];
                 }
             }
-            if($resJsonIssue['assignee']===null){
-                $assignee=$resJsonIssue['user']['id'];
+            if($resJsonIssue2['assignee']===null){
+                $assignee=$resJsonIssue2['user']['id'];
             }else{
-                $assignee=$resJsonIssue['assignee']['id'];
+                $assignee=$resJsonIssue2['assignee']['id'];
                 // dd($assignee);
             }
             $pullreq_check2=DB::table('pullrequests')->where('title',$resJsonIssue2['title'])->exists();
@@ -520,7 +520,7 @@ function get_commit_data($repos_id){
 }
 
 function evaluation($repos_id){
-    // issue完了率
+    // << issue完了率 >>
     $open=Issues::where('repositories_id',$repos_id)->where('close_flag', 0)->count();
     $close=Issues::where('repositories_id',$repos_id)->where('close_flag', 1)->count();
     // dd($open);
@@ -528,10 +528,12 @@ function evaluation($repos_id){
     if(($open+$close)===0){
         $rate=0;
     }else{
-        $rate=$close / ($open + $close);
+        $rate=round($close / ($open + $close), 2);
     }
     // dd($rate);
 
+
+    // << 平均プルリクエスト数 >>
     // まずはrepository作成日から今日までの差分を求める
     $create_day=Repositories::where('id',$repos_id)->orderBy('created_date','asc')->value('created_date');
     //dd($create_day);
@@ -546,32 +548,137 @@ function evaluation($repos_id){
     $pullreq_count=Pullrequests::where('repositories_id',$repos_id)->count();
     //dd($pullreq_count);
 
-    $pullreq_eva=($pullreq_count/$diff->days)/3;
-    //dd($pullreq_eva);
+    $pullreq_ave=round($pullreq_count/$diff->days, 2);
+    // dd($pullreq_ave);
 
-    $score=$rate+$pullreq_eva;
-    // dd($score);
 
-    if($score >= 2.0){
-        $state="exellent";
-    }elseif(($score >= 1.5) && ($score < 2.0)){
-        $state="very good";
-    }elseif(($score >= 1.0) && ($score < 1.5)){
-        $state="good";
-    }elseif(($score >= 0.5) && ($score < 1.0)){
-        $state="average";
+    // << issueの取り掛かり時間の平均 >>
+
+    $issues=DB::table('issues')
+    ->select('open_date', 'start_at')
+    ->where('repositories_id',$repos_id)
+    ->get()
+    ->toArray();
+    //dd($issues);
+    //dd($issues[0]->open_date);
+    //dd($issues[0]->start_at);
+    
+    $sum=0;
+    for($i=0; $i<count($issues); $i++){
+        if(($issues[$i]->start_at)===null){
+            $open=$issues[$i]->open_date;
+            $open=DateTime::createFromFormat('Y-m-d H:i:s', $open);
+            // $todayは上記で定義済み
+            $diffday=$open->diff($today)->days;
+            //dd(gettype($diffday));
+            $sum+=$diffday;
+        }else{
+            $open=$issues[$i]->open_date;
+            $open=DateTime::createFromFormat('Y-m-d H:i:s', $open);
+            //dd($open);
+            $start=$issues[$i]->start_at;
+            $start=DateTime::createFromFormat('Y-m-d H:i:s', $start);
+            //dd($start);
+            $diffday=$open->diff($start)->days;
+            //dd($diffday);
+            $sum+=$diffday;
+        }
+    }
+    //dd($sum);
+    $start_ave=round($sum/count($issues), 1);
+    // dd($start_ave);
+
+
+    // << スコア計算・評価 >>
+    // $rate: issueの割合
+    // $pullreq_ave: 平均プルリクエスト数
+    // $start_ave: issueをたててから取り掛かるまでの平均時間
+
+    if($rate >= 0.9){
+        $rate_score=4;
+    }elseif(($rate >= 0.75) && ($rate < 0.9)){
+        $rate_score=3;
+    }elseif(($rate >= 0.5) && ($rate < 0.75)){
+        $rate_score=2;
     }else{
-        $state="poor";
+        $rate_score=1;
     }
 
+    if($pullreq_ave >= 4.0){
+        $pullreq_score=4;
+    }elseif(($pullreq_ave >= 3.0) && ($pullreq_ave < 4.0)){
+        $pullreq_score=3;
+    }elseif(($pullreq_ave >= 2.0) && ($pullreq_ave < 3.0)){
+        $pullreq_score=2;
+    }else{
+        $pullreq_score=1;
+    }
+
+    if($start_ave <= 2.0){
+        $start_score=4;
+    }elseif(($start_ave <= 5.0) && ($start_ave > 2.0)){
+        $start_score=3;
+    }elseif(($start_ave <= 7.0) && ($start_ave > 5.0)){
+        $start_score=2;
+    }else{
+        $start_score=1;
+    }
+    
+    $total_score=$rate_score+$pullreq_score+$start_score;
+
     $evaluation=array();
-    $evaluation['rate']=round($rate, 2);
-    $evaluation['score']=round($score, 2);
-    $evaluation['state']=$state;
+    $evaluation['rate']=$rate;
+    $evaluation['rate_state']=get_evaluation($rate_score);
+    $evaluation['pullreq_ave']=$pullreq_ave;
+    $evaluation['pullreq_state']=get_evaluation($pullreq_score);
+    $evaluation['start_ave']=$start_ave;
+    $evaluation['start_state']=get_evaluation($start_score);
+    $evaluation['total_score']=$total_score;
+    $evaluation['total_state']=get_total_evaluation($total_score);
 
     // dd($evaluation);
     return $evaluation;
 
+}
+
+function get_evaluation($score){
+    switch($score){
+        case 4:
+            return "A";
+            break;
+        case 3:
+            return "B";
+            break;
+        case 2:
+            return "C";
+            break;
+        case 1:
+            return "D";
+            break;
+        default:
+            return "Error";
+            break;
+    }
+}
+
+function get_total_evaluation($score){
+   switch($score){
+    case $score === 12 || $score === 11:
+        return "A";
+        break;
+    case $score <= 10 && $score > 7:
+        return "B";
+        break;
+    case $score <= 7 && $score > 4:
+        return "C";
+        break;
+    case $score === 3 || $score === 4:
+        return "D";
+        break;
+    default:
+        return "Error";
+        break;
+   }
 }
 
 class DetailController extends Controller
