@@ -528,7 +528,7 @@ function evaluation($repos_id){
     if(($open+$close)===0){
         $rate=0;
     }else{
-        $rate=$close / ($open + $close);
+        $rate=round($close / ($open + $close), 2);
     }
     // dd($rate);
 
@@ -586,39 +586,99 @@ function evaluation($repos_id){
     }
     //dd($sum);
     $start_ave=round($sum/count($issues), 1);
-    dd($start_ave);
-
-
+    // dd($start_ave);
 
 
     // << スコア計算・評価 >>
     // $rate: issueの割合
     // $pullreq_ave: 平均プルリクエスト数
     // $start_ave: issueをたててから取り掛かるまでの平均時間
-    
-    $score=$rate+$pullreq_eva;
-    // dd($score);
 
-    if($score >= 2.0){
-        $state="exellent";
-    }elseif(($score >= 1.5) && ($score < 2.0)){
-        $state="very good";
-    }elseif(($score >= 1.0) && ($score < 1.5)){
-        $state="good";
-    }elseif(($score >= 0.5) && ($score < 1.0)){
-        $state="average";
+    if($rate >= 0.9){
+        $rate_score=4;
+    }elseif(($rate >= 0.75) && ($rate < 0.9)){
+        $rate_score=3;
+    }elseif(($rate >= 0.5) && ($rate < 0.75)){
+        $rate_score=2;
     }else{
-        $state="poor";
+        $rate_score=1;
     }
 
+    if($pullreq_ave >= 4.0){
+        $pullreq_score=4;
+    }elseif(($pullreq_ave >= 3.0) && ($pullreq_ave < 4.0)){
+        $pullreq_score=3;
+    }elseif(($pullreq_ave >= 2.0) && ($pullreq_ave < 3.0)){
+        $pullreq_score=2;
+    }else{
+        $pullreq_score=1;
+    }
+
+    if($start_ave <= 2.0){
+        $start_score=4;
+    }elseif(($start_ave <= 5.0) && ($start_ave > 2.0)){
+        $start_score=3;
+    }elseif(($start_ave <= 7.0) && ($start_ave > 5.0)){
+        $start_score=2;
+    }else{
+        $start_score=1;
+    }
+    
+    $total_score=$rate_score+$pullreq_score+$start_score;
+
     $evaluation=array();
-    $evaluation['rate']=round($rate, 2);
-    $evaluation['score']=round($score, 2);
-    $evaluation['state']=$state;
+    $evaluation['rate']=$rate;
+    $evaluation['rate_state']=get_evaluation($rate_score);
+    $evaluation['pullreq_ave']=$pullreq_ave;
+    $evaluation['pullreq_state']=get_evaluation($pullreq_score);
+    $evaluation['start_ave']=$start_ave;
+    $evaluation['start_state']=get_evaluation($start_score);
+    $evaluation['total_score']=$total_score;
+    $evaluation['total_state']=get_total_evaluation($total_score);
 
     // dd($evaluation);
     return $evaluation;
 
+}
+
+function get_evaluation($score){
+    switch($score){
+        case 4:
+            return "A";
+            break;
+        case 3:
+            return "B";
+            break;
+        case 2:
+            return "C";
+            break;
+        case 1:
+            return "D";
+            break;
+        default:
+            return "Error";
+            break;
+    }
+}
+
+function get_total_evaluation($score){
+   switch($score){
+    case $score === 12 || $score === 11:
+        return "A";
+        break;
+    case $score <= 10 && $score > 7:
+        return "B";
+        break;
+    case $score <= 7 && $score > 4:
+        return "C";
+        break;
+    case $score === 3 || $score === 4:
+        return "D";
+        break;
+    default:
+        return "Error";
+        break;
+   }
 }
 
 class DetailController extends Controller
