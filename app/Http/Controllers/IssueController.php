@@ -17,6 +17,28 @@ use Illuminate\Support\Facades\Auth as FacadesAuth;
 use DB;
 
 
+function calendar($id){
+  // dd($id);
+  $issues=DB::table('issues')->where('repositories_id',$id)->get();
+  // dd($issues);
+  $started=array();
+  $distart=array();
+  $finished=array();
+  foreach($issues as $issue){
+    if($issue->start_at!==null){
+      if($issue->close_date===null){
+        $started[]=$issue;
+      }else{
+        $finished[]=$issue;
+      }
+    }else{
+      $distart[]=$issue;
+    }
+  }
+  // dd($started);
+  return [$started,$finished];
+}
+
 class IssueController extends Controller
 {
     /**
@@ -72,8 +94,8 @@ class IssueController extends Controller
       }
 
       // dd($op_clos_ratios);
-      $weeks = ["6day ago","5day ago","4day ago","3day ago","2day ago","1day ago","today"];
-      dd($id);
+      // $weeks = ["6day ago","5day ago","4day ago","3day ago","2day ago","1day ago","today"];
+      // dd($id);
 
 
       return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios,'weeks'=>$weeks,'id'=>$id]);
@@ -108,7 +130,8 @@ class IssueController extends Controller
      */
     public function show($id)
     {
-        //
+      $data=calendar($id);
+        dd($data);
       $issues = DB::table('issues')
         ->where('repositories_id',$id)
         ->join('gh_profiles','user_id', '=', 'gh_profiles.id')

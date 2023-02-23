@@ -18,7 +18,7 @@ if (document.getElementById("calendar") != null) {
                 duration: { days: 4 }
             },
         },
-        // 終わってないのはallday
+        // 終わってないのはallday,色とかも変える
         events: [{
                 title: "eventName",
                 start: "2023-02-23",
