@@ -21,22 +21,31 @@ function calendar($id){
   // dd($id);
   $issues=DB::table('issues')->where('repositories_id',$id)->get();
   // dd($issues);
-  $started=array();
-  $distart=array();
-  $finished=array();
+  $started_title=array();
+  $started_start=array();
+  $started_finish=array();
+  $finished_title=array();
+  $finished_start=array();
+  $finished_finish=array();
   foreach($issues as $issue){
     if($issue->start_at!==null){
+      // 開始してる
       if($issue->close_date===null){
-        $started[]=$issue;
+        // 終了してる
+        $started_title[]=$issue->title;
+        $started_start[]=$issue->start_at;
       }else{
-        $finished[]=$issue;
+        // 終了してない
+        $finished_title[]=$issue->title;
+        $finished_start[]=$issue->start_at;
+        $finished_finish[]=$issue->close_date;
       }
     }else{
       $distart[]=$issue;
     }
   }
   // dd($started);
-  return [$started,$finished];
+  return [ $started_title, $started_start, $started_finish,$finished_title,$finished_start,$finished_finish];
 }
 
 class IssueController extends Controller
@@ -189,7 +198,7 @@ class IssueController extends Controller
       $weeks = ["6day ago","5day ago","4day ago","3day ago","2day ago","1day ago","today"];
 
 
-      return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios,'start_ratios'=>$op_start_ratios,'weeks'=>$weeks,'id'=>$id]);
+      return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios,'start_ratios'=>$op_start_ratios,'weeks'=>$weeks,'id'=>$id,'calendar'=>$data]);
     }
 
     /**
