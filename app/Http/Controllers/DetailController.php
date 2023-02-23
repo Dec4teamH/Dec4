@@ -548,7 +548,7 @@ function evaluation($repos_id){
     $pullreq_count=Pullrequests::where('repositories_id',$repos_id)->count();
     //dd($pullreq_count);
 
-    $pullreq_ave=($pullreq_count/$diff->days);
+    $pullreq_ave=round($pullreq_count/$diff->days, 2);
     // dd($pullreq_ave);
 
 

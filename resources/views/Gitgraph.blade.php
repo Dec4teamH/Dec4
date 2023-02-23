@@ -29,6 +29,7 @@
                     <canvas id='canvas' width="500" height="400" data="good"></canvas>
                 </div>
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg my-2">
+                    <h1 class="p-6 font-bold text-xl text-gray-800">{{'評価基準'}}</h1>
                     <div class="p-6 bg-white border-b border-gray-200">
                         <div class="py-2">
                             {{'issueの割合'}}
