@@ -548,39 +548,54 @@ function evaluation($repos_id){
     $pullreq_count=Pullrequests::where('repositories_id',$repos_id)->count();
     //dd($pullreq_count);
 
-    $pullreq_eva=($pullreq_count/$diff->days)/3;
-    //dd($pullreq_eva);
+    $pullreq_ave=($pullreq_count/$diff->days);
+    // dd($pullreq_ave);
 
 
     // << issueの取り掛かり時間の平均 >>
 
     $issues=DB::table('issues')
-    ->select('open_date, start_at')
+    ->select('open_date', 'start_at')
     ->where('repositories_id',$repos_id)
     ->get()
     ->toArray();
-    dd($issues);
-
-    for($i; $i<count($issues); i++){
-        $sum=0;
+    //dd($issues);
+    //dd($issues[0]->open_date);
+    //dd($issues[0]->start_at);
+    
+    $sum=0;
+    for($i=0; $i<count($issues); $i++){
         if(($issues[$i]->start_at)===null){
             $open=$issues[$i]->open_date;
-            $start$issues[$i]->start_at;
-            $diffday=$open->diffInDays($start);
+            $open=DateTime::createFromFormat('Y-m-d H:i:s', $open);
+            // $todayは上記で定義済み
+            $diffday=$open->diff($today)->days;
+            //dd(gettype($diffday));
             $sum+=$diffday;
         }else{
             $open=$issues[$i]->open_date;
-            $diffday=$open->diffInDays($start);
+            $open=DateTime::createFromFormat('Y-m-d H:i:s', $open);
+            //dd($open);
+            $start=$issues[$i]->start_at;
+            $start=DateTime::createFromFormat('Y-m-d H:i:s', $start);
+            //dd($start);
+            $diffday=$open->diff($start)->days;
+            //dd($diffday);
             $sum+=$diffday;
         }
     }
-    $start_ave=$sum/count($issues);
+    //dd($sum);
+    $start_ave=round($sum/count($issues), 1);
     dd($start_ave);
 
 
 
 
     // << スコア計算・評価 >>
+    // $rate: issueの割合
+    // $pullreq_ave: 平均プルリクエスト数
+    // $start_ave: issueをたててから取り掛かるまでの平均時間
+    
     $score=$rate+$pullreq_eva;
     // dd($score);
 
