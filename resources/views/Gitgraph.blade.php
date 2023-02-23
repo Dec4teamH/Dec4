@@ -1,13 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Dashboard') }}
-            </h2>
+            <a href="{{ route('detail.show', $id) }}">
+                {{ __('Index') }}
+            </a>
             <!-- Pullrequest Links -->
             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                <a href="/pullrequest/{{$id}}">
+                <a href="/pullrequest/{{ $id }}">
                     {{ __('Pullrequest') }}
+                </a>
+            </div>
+            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                <a href="{{ route('issue.show', $id) }}">
+                    {{ __('Issue') }}
                 </a>
             </div>
         </div>

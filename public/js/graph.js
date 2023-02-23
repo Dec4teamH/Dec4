@@ -1,7 +1,7 @@
 // graph
 // canvas
-canvas = document.querySelector('#canvas');
-context = canvas.getContext('2d');
+const canvas = document.querySelector('#canvas');
+const context = canvas.getContext('2d');
 // 画面サイズ取得
 let w = document.getElementById('canvas').clientWidth;
 let h = document.getElementById('canvas').clientHeight;
