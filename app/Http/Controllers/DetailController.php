@@ -324,9 +324,9 @@ function register_issue($repos_id){
             // dd($resJsonIssue);
             // dd($resJsonIssue['reactions']);
             $start_ats=httpRequest('get',$resJsonIssue['reactions']['url'], null, ['Authorization: Bearer ' . $access_token]);
-            // dd($start_at);
             $start=null;
             foreach($start_ats as $start_at){
+                dd($start_at);
                 if($start_at['content']==="rocket"){
                     $start=$start_at['created_at'];
                 }
