@@ -86,33 +86,6 @@
                 }
             }
         };
-    const data = {
-        labels: labels,
-        datasets: [{
-            label: 'Open issue ration',
-            backgroundColor: 'rgb(255, 99, 132)',
-            borderColor: 'rgb(255, 99, 132)',
-            data: users,
-        }]
-    };
-  
-    const config = {
-      type: 'line',
-      data: data,
-      options: {
-        responsive: true,
-        plugins:{
-          display: true,
-          text: 'Opne_Closeの割合'
-        },
-        scales: {
-          y: {
-            min:0,
-            max:100,
-          }
-        }
-      }
-    };
   
     const myChart = new Chart(
         document.getElementById('myChart'),
