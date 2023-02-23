@@ -407,10 +407,10 @@ function register_issue($repos_id){
                     $start2=$start_at2['created_at'];
                 }
             }
-            if($resJsonIssue['assignee']===null){
-                $assignee=$resJsonIssue['user']['id'];
+            if($resJsonIssue2['assignee']===null){
+                $assignee=$resJsonIssue2['user']['id'];
             }else{
-                $assignee=$resJsonIssue['assignee']['id'];
+                $assignee=$resJsonIssue2['assignee']['id'];
                 // dd($assignee);
             }
             $pullreq_check2=DB::table('pullrequests')->where('title',$resJsonIssue2['title'])->exists();
