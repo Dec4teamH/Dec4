@@ -324,9 +324,9 @@ function register_issue($repos_id){
             // dd($resJsonIssue);
             // dd($resJsonIssue['reactions']);
             $start_ats=httpRequest('get',$resJsonIssue['reactions']['url'], null, ['Authorization: Bearer ' . $access_token]);
-            // dd($start_at);
             $start=null;
             foreach($start_ats as $start_at){
+                // dd($start_at);
                 if($start_at['content']==="rocket"){
                     $start=$start_at['created_at'];
                 }
@@ -342,7 +342,7 @@ function register_issue($repos_id){
             if(!($pullreq_check)){
                 $issueIdCheck=DB::table('issues')->where('id', $resJsonIssue['id'])->exists();
             if(!($issueIdCheck)){
-                Issues::create(['id'=>$resJsonIssue['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
+                Issues::create(['id'=>$resJsonIssue['id'],'number'=>$resJsonIssue['number'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
             'user_id'=>$resJsonIssue['user']['id'],'assign_id'=>$assignee,'close_flag'=>0,'start_at'=>fix_timezone($start),'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
             }else{
                 $check_start=DB::table('issues')->where('id', $resJsonIssue['id'])->get("start_at");
@@ -405,36 +405,36 @@ function register_issue($repos_id){
             if(!($pullreq_check2)){
                 $issueIdCheck2=DB::table('issues')->where('id', $resJsonIssue2['id'])->exists();
                 if(!($issueIdCheck2)){
-                    Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
+                    Issues::create(['id'=>$resJsonIssue2['id'],'number'=>$resJsonIssue2['number'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
                 'user_id'=>$resJsonIssue2['user']['id'],'assign_id'=>$assignee,'close_flag'=>1,'start_at'=>fix_timezone($start2),'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
                 }else{
+                    // dd($resJsonIssue2);
                     $check_start2=DB::table('issues')->where('id', $resJsonIssue2['id'])->get("start_at");
                     if($check_start2[0]->start_at===null){
-                DB::table('issues')
-                ->where('id', $resJsonIssue2['id'])
-                ->update([
-                    'assign_id'=>$assignee,
-                    'close_flag'=>1,
-                    'start_at'=>fix_timezone($start2),
-                    'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
-                ]);
-                }else{
-
-                DB::table('issues')
-                ->where('id', $resJsonIssue['id'])
-                ->update([
-                    'assign_id'=>$assignee,
-                    'close_flag'=>1,
-                    'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
-                ]);
+                        DB::table('issues')
+                        ->where('id', $resJsonIssue2['id'])
+                        ->update([
+                            'assign_id'=>$assignee,
+                            'close_flag'=>1,
+                            'start_at'=>fix_timezone($start2),
+                            'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
+                        ]);
+                        }else{
+                        DB::table('issues')
+                        ->where('id', $resJsonIssue2['id'])
+                        ->update([
+                            'assign_id'=>$assignee,
+                            'close_flag'=>1,
+                            'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
+                        ]);
+                        }
                 }
-                }
-            }else{
-                continue;
-            }
-            }else{
-                continue;
-            }
+                    }else{
+                        continue;
+                    }
+                    }else{
+                        continue;
+                    }
         }
 }
 // 
