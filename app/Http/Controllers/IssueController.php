@@ -37,12 +37,17 @@ function calendar($id){
   // dd($id);
   $issues=DB::table('issues')->where('repositories_id',$id)->get();
   // dd($issues);
+  $repositories=DB::table('repositories')->where('id',$id)->first();
+  // dd($repositories);
   $started_title=array();
   $started_start=array();
   $finished_title=array();
   $finished_start=array();
   $finished_finish=array();
   $distart=array();
+  $start_url=array();
+  $finish_url=array();
+  $dis_url=array();
   foreach($issues as $issue){
     if($issue->start_at!==null){
       // 開始してる
@@ -53,6 +58,7 @@ function calendar($id){
         // 終了してnai
         $started_title[]=$issue->title;
         $started_start[]=$devs['year']."-".$devs['month']."-".$devs['day']." ".$devs['hour'].":".$devs['min'];
+        $start_url[]="https://github.com/".$repositories->owner_name."/".$repositories->repos_name."/issues/".$issue->number;
       }else{
         // 終了してru
         $devs=devide_time($issue->start_at);
@@ -60,17 +66,19 @@ function calendar($id){
         $finished_title[]=$issue->title;
         $finished_start[]=$devs['year']."-".$devs['month']."-".$devs['day']." ".$devs['hour'].":".$devs['min'];
         $finished_finish[]=$devf['year']."-".$devf['month']."-".$devf['day']." ".$devf['hour'].":".$devf['min'];
+        $finish_url[]="https://github.com/".$repositories->owner_name."/".$repositories->repos_name."/issues/".$issue->number;
       }
     }else{
       if($issue->close_flag===0){
       $distart[]=$issue;
+      $dis_url[]="https://github.com/".$repositories->owner_name."/".$repositories->repos_name."/issues/".$issue->number;
       }
     }
   }
   $s_count=count($started_title);
   $f_count=count($finished_title);
   // dd($started);
-  return [ $started_title, $started_start,$finished_title,$finished_start,$finished_finish,$s_count,$f_count,$distart];
+  return [ $started_title, $started_start,$finished_title,$finished_start,$finished_finish,$s_count,$f_count,$distart,$start_url,$finish_url, $dis_url];
 }
 
 class IssueController extends Controller

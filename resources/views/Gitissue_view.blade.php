@@ -27,13 +27,19 @@
                 @php
                     $date = date('w');
                     $today = date('Y-m-d', strtotime('-' . $date . 'day'));
+                    $i = 0;
                 @endphp
                 <div>
                     <div>openされてから放置されています</div>
                     @foreach ($calendar[7] as $open_at)
                         @if ($open_at->open_date < $today)
-                            <div class="p-6 bg-white border-b border-gray-200">{{ $open_at->title }}</div>
+                            <div class="p-6 bg-white border-b border-gray-200">
+                                <a href={{ $calendar[10][$i] }}>{{ $open_at->title }}</a>
+                            </div>
                         @endif
+                        @php
+                            $i++;
+                        @endphp
                     @endforeach
                 </div>
             </div>
@@ -54,7 +60,7 @@
             allDay: true,
             borderColor: "#000",
             color: "#f00",
-            url: "https://github.com/Dec4teamH/Dec4/issues/8"
+            url: `{{ $calendar[8][$i] }}`,
         };
     </script>
 @endfor
@@ -64,6 +70,7 @@
             title: `{{ $calendar[2][$i] }}`,
             start: `{{ $calendar[3][$i] }}`,
             end: `{{ $calendar[4][$i] }}`,
+            url: `{{ $calendar[9][$i] }}`,
 
         };
     </script>
