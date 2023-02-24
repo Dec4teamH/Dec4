@@ -65,36 +65,45 @@
             labels: labels,
             datasets: [
               {
-                label: 'Open issue ration',
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
+                type: 'bar',
+                label: 'Open issue ratio',
+                backgroundColor: 'rgba(255, 99, 132,0.5)',
+                borderColor: 'rgba(255, 99, 132,0.5)',
                 data: op_ratios,
+                yAxisID: 'open_total',
               },
               {
-                label: 'Start issue ration',
+                type: 'line',
+                label: 'Start issue ratio',
                 backgroundColor: 'rgb(160, 217, 262)',
                 borderColor: 'rgb(160, 217, 262)',
                 data: start_ratios,
+                yAxisID: 'start_ratio',
               }
             ]
         };
 
         const config = {
-            type: 'line',
-            data: data,
-            options: {
-                responsive: true,
-                plugins: {
-                    display: true,
-                    text: 'Opne_Closeの割合'
-                },
-                scales: {
-                    y: {
-                        min: 0,
-                        max: 100,
-                    }
-                }
+          data: data,
+          options: {
+            responsive: true,
+            scales: {
+              'open_total': {
+                type: 'linear',
+                position: 'left',
+                min: 0,
+                stepSize:1,
+              },
+              'start_ratio':{
+                id: 'start_ratio',
+                type: 'linear',
+                position: 'right',
+                max: 100,
+                min: 0,
+                stepSize: 0.5,
+              }
             }
+          }
         };
   
     const myChart = new Chart(
