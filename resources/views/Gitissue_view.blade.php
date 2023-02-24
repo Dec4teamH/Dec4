@@ -55,11 +55,13 @@
         $json_weeks = json_encode($weeks);
         $json_ratios = json_encode($ratios);
         $json_start_ratios = json_encode($start_ratios);
+        $json_open_count = json_encode($open_totals);
         ?>
 
         var labels = <?php echo $json_weeks; ?>;
         var op_ratios = <?php echo $json_ratios; ?>;
         var start_ratios = <?php echo $json_start_ratios; ?>;
+        var op_totals = <?php echo $json_open_count; ?>;
 
         const data = {
             labels: labels,
@@ -69,7 +71,7 @@
                 label: 'Open issue ratio',
                 backgroundColor: 'rgba(255, 99, 132,0.5)',
                 borderColor: 'rgba(255, 99, 132,0.5)',
-                data: op_ratios,
+                data: op_totals,
                 yAxisID: 'open_total',
               },
               {
