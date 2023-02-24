@@ -22,11 +22,10 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div><canvas id="myissue" height="100px"></div>
-                <div id="calendar"></div>
+                <canvas id="myissue" height="100px">
 
 
-                <!-- <table border="1">
+                    <!-- <table border="1">
                     <thead>
                       <tr>
                         @foreach ($weeks as $week)
@@ -43,6 +42,7 @@
                     </tbody>
                   </table> -->
             </div>
+            <div id='calendar'></div>
         </div>
     </div>
     </div>
@@ -51,14 +51,28 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // event要のデータ検討
-    let calendar_started_title = `{{ $calendar[0] }}`;
-    let calendar_started_start = `{{ $calendar[1] }}`;
-    let calendar_started_finish = `{{ $calendar[2] }}`;
-    let calendar_fnished_title = `{{ $calendar[3] }}`;
-    let calendar_fnished_start = `{{ $calendar[4] }}`;
-    let calendar_fnished_finish = `{{ $calendar[5] }}`;
+    let events = [];
 </script>
+@for ($i = 0; $i < $calendar[5]; $i++)
+    <script>
+        events[`{{ $i }}`] = {
+            title: `{{ $calendar[0][$i] }}`,
+            start: `{{ $calendar[1][$i] }}`,
+            backgroundColor: 'green',
+            borderColor: 'green'
+        };
+    </script>
+@endfor
+@for ($i = 0; $i < $calendar[6]; $i++)
+    <script>
+        events[`{{ $i }}`] = {
+            title: `{{ $calendar[2][$i] }}`,
+            start: `{{ $calendar[3][$i] }}`,
+            end: `{{ $calendar[4][$i] }}`,
+
+        };
+    </script>
+@endfor
 <script type="text/javascript">
     <?php
     $json_weeks = json_encode($weeks);
@@ -105,7 +119,7 @@
         }
     };
 
-    const myissue = new Chart(
+    const myChart = new Chart(
         document.getElementById('myissue'),
         config
     );

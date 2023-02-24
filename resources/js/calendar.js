@@ -19,12 +19,9 @@ if (document.getElementById("calendar") != null) {
             },
         },
         // 終わってないのはallday,色とかも変える
-        events: [{
-                title: "eventName",
-                start: "2023-02-23",
-                end: "2023-02-24",
-                allDay : false ,
-        },]
-    });
+        events: events,
+    }
+    );
+    
     calendar.render();
 }

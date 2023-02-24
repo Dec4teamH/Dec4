@@ -408,33 +408,33 @@ function register_issue($repos_id){
                     Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
                 'user_id'=>$resJsonIssue2['user']['id'],'assign_id'=>$assignee,'close_flag'=>1,'start_at'=>fix_timezone($start2),'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
                 }else{
+                    // dd($resJsonIssue2);
                     $check_start2=DB::table('issues')->where('id', $resJsonIssue2['id'])->get("start_at");
                     if($check_start2[0]->start_at===null){
-                DB::table('issues')
-                ->where('id', $resJsonIssue2['id'])
-                ->update([
-                    'assign_id'=>$assignee,
-                    'close_flag'=>1,
-                    'start_at'=>fix_timezone($start2),
-                    'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
-                ]);
-                }else{
-
-                DB::table('issues')
-                ->where('id', $resJsonIssue['id'])
-                ->update([
-                    'assign_id'=>$assignee,
-                    'close_flag'=>1,
-                    'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
-                ]);
+                        DB::table('issues')
+                        ->where('id', $resJsonIssue2['id'])
+                        ->update([
+                            'assign_id'=>$assignee,
+                            'close_flag'=>1,
+                            'start_at'=>fix_timezone($start2),
+                            'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
+                        ]);
+                        }else{
+                        DB::table('issues')
+                        ->where('id', $resJsonIssue2['id'])
+                        ->update([
+                            'assign_id'=>$assignee,
+                            'close_flag'=>1,
+                            'close_date'=>fix_timezone($resJsonIssue2['closed_at'])
+                        ]);
+                        }
                 }
-                }
-            }else{
-                continue;
-            }
-            }else{
-                continue;
-            }
+                    }else{
+                        continue;
+                    }
+                    }else{
+                        continue;
+                    }
         }
 }
 // 
