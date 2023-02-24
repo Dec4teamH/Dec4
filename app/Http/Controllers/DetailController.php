@@ -589,13 +589,13 @@ function evaluation($repos_id){
         }
     }
     //dd($sum);
-    if(count($issues)===0){
-        $start_ave=0;
+    if(count($issues)==0){
+        $start_ave="None";
     }else{
         $start_ave=round($sum/count($issues), 1);
     }
 
-    // dd($start_ave);
+    //dd($start_ave);
 
 
     // << スコア計算・評価 >>
@@ -609,9 +609,12 @@ function evaluation($repos_id){
         $rate_score=3;
     }elseif(($rate >= 0.5) && ($rate < 0.75)){
         $rate_score=2;
-    }else{
+    }elseif(($rate > 0) && ($rate < 0.5)){
         $rate_score=1;
+    }else{
+        $rate_score=0;
     }
+    //dd($rate_score);
 
     if($pullreq_ave >= 4.0){
         $pullreq_score=4;
@@ -619,9 +622,13 @@ function evaluation($repos_id){
         $pullreq_score=3;
     }elseif(($pullreq_ave >= 2.0) && ($pullreq_ave < 3.0)){
         $pullreq_score=2;
-    }else{
+    }elseif(($pullreq_ave > 0) && ($pullreq_ave < 2.0)){
         $pullreq_score=1;
+    }else{
+        $pullreq_score=0;
     }
+    // dd($pullreq_score);
+
 
     if($start_ave <= 2.0){
         $start_score=4;
@@ -629,10 +636,12 @@ function evaluation($repos_id){
         $start_score=3;
     }elseif(($start_ave <= 7.0) && ($start_ave > 5.0)){
         $start_score=2;
-    }else{
+    }elseif($start_ave > 7.0){
         $start_score=1;
+    }else{
+        $start_score=0;
     }
-    
+    //dd($start_score);
     $total_score=$rate_score+$pullreq_score+$start_score;
 
     $evaluation=array();
@@ -665,7 +674,7 @@ function get_evaluation($score){
             return "D";
             break;
         default:
-            return "Error";
+            return "None";
             break;
     }
 }
@@ -681,11 +690,11 @@ function get_total_evaluation($score){
     case $score <= 7 && $score > 4:
         return "C";
         break;
-    case $score === 3 || $score === 4:
+    case $score <= 4:
         return "D";
         break;
     default:
-        return "Error";
+        return "None";
         break;
    }
 }
