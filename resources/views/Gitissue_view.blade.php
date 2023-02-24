@@ -22,29 +22,22 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <canvas id="myissue" height="100px">
-
-
-                    <!-- <table border="1">
-                    <thead>
-                      <tr>
-                        @foreach ($weeks as $week)
-<th>{{ $week }}　</th>
-@endforeach
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        @foreach ($ratios as $ratio)
-<td style="text-align: center;">{{ $ratio }}% </td>
-@endforeach
-                      </tr>
-                    </tbody>
-                  </table> -->
+                <div class="p-6 bg-white border-b border-gray-200"><canvas id="myissue" height="100px"></div>
+                <div id='calendar' class="m-96 bg-white overflow-hidden shadow-sm sm:rounded-lg"></div>
+                @php
+                    $date = date('w');
+                    $today = date('Y-m-d', strtotime('-' . $date . 'day'));
+                @endphp
+                <div>
+                    <div>openされてから放置されています</div>
+                    @foreach ($calendar[7] as $open_at)
+                        @if ($open_at->open_date < $today)
+                            <div class="p-6 bg-white border-b border-gray-200">{{ $open_at->title }}</div>
+                        @endif
+                    @endforeach
+                </div>
             </div>
-            <div id='calendar'></div>
         </div>
-    </div>
     </div>
 </x-app-layout>
 
@@ -59,6 +52,7 @@
             title: `{{ $calendar[0][$i] }}`,
             start: `{{ $calendar[1][$i] }}`,
             allDay: true,
+            borderColor: "#000",
             color: "#f00"
         };
     </script>

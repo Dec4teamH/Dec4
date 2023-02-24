@@ -42,6 +42,7 @@ function calendar($id){
   $finished_title=array();
   $finished_start=array();
   $finished_finish=array();
+  $distart=array();
   foreach($issues as $issue){
     if($issue->start_at!==null){
       // 開始してる
@@ -61,13 +62,15 @@ function calendar($id){
         $finished_finish[]=$devf['year']."-".$devf['month']."-".$devf['day']." ".$devf['hour'].":".$devf['min'];
       }
     }else{
+      if($issue->close_flag===0){
       $distart[]=$issue;
+      }
     }
   }
   $s_count=count($started_title);
   $f_count=count($finished_title);
   // dd($started);
-  return [ $started_title, $started_start,$finished_title,$finished_start,$finished_finish,$s_count,$f_count];
+  return [ $started_title, $started_start,$finished_title,$finished_start,$finished_finish,$s_count,$f_count,$distart];
 }
 
 class IssueController extends Controller
