@@ -1,19 +1,32 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex">
-            <a href="{{ route('detail.show', $id) }}">
-                {{ __('Index') }}
-            </a>
-            <!-- Pullrequest Links -->
-            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                <a href="/pullrequest/{{ $id }}">
-                    {{ __('Pullrequest') }}
+        <div class="flex justify-between">
+            <div class="flex">
+                <a href="{{ route('detail.show', $id) }}">
+                    {{ __('Index') }}
                 </a>
+                <!-- Pullrequest Links -->
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <a href="/pullrequest/{{ $id }}">
+                        {{ __('Pullrequest') }}
+                    </a>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <a href="{{ route('issue.show', $id) }}">
+                        {{ __('Issue') }}
+                    </a>
+                </div>
             </div>
-            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                <a href="{{ route('issue.show', $id) }}">
-                    {{ __('Issue') }}
-                </a>
+            <div>
+                <form action="{{ route('detail.edit', $id) }}" method="get">
+                    @csrf
+                    <button type="submit">
+                        <svg class="h-8 w-8 text-green-500"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round">  
+                            <polyline points="1 4 1 10 7 10" />  
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                        </svg>
+                    </button>
+                </form>
             </div>
         </div>
     </x-slot>
@@ -22,14 +35,10 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div id="graph" class="flex justify-center">
-                    <form action="{{ route('detail.edit', $id) }}" method="get">
-                        @csrf
-                        <button type="submit">更新</button>
-                    </form>
                     <canvas id='canvas' width="500" height="400" data="good"></canvas>
                 </div>
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg my-2">
-                    <h1 class="p-6 font-bold text-xl text-gray-800">{{'評価基準'}}</h1>
+                    <p class="px-6 font-bold text-3xl text-gray-800 border-b border-gray-200">{{'評価基準'}}</p>
                     <div class="p-6 bg-white border-b border-gray-200">
                         <div class="py-2">
                             {{'issueの割合'}}
