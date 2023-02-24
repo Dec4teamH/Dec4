@@ -58,14 +58,14 @@
         events[`{{ $i }}`] = {
             title: `{{ $calendar[0][$i] }}`,
             start: `{{ $calendar[1][$i] }}`,
-            backgroundColor: 'green',
-            borderColor: 'green'
+            allDay: true,
+            color: "#f00"
         };
     </script>
 @endfor
 @for ($i = 0; $i < $calendar[6]; $i++)
     <script>
-        events[`{{ $i }}`] = {
+        events[`{{ $i + $calendar[5] }}`] = {
             title: `{{ $calendar[2][$i] }}`,
             start: `{{ $calendar[3][$i] }}`,
             end: `{{ $calendar[4][$i] }}`,

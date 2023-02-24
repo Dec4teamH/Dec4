@@ -45,7 +45,7 @@ function calendar($id){
   foreach($issues as $issue){
     if($issue->start_at!==null){
       // 開始してる
-      if($issue->close_date===null){
+      if($issue->close_flag===0){
       $devs=devide_time($issue->start_at);
       //  dd($devs);
       // dd($devs['year']."-".$devs['month']."-".$devs['day']." ".$devs['hour'].":".$devs['min']);
