@@ -23,7 +23,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200"><canvas id="myissue" height="100px"></div>
-                <div id='calendar' class="m-96 bg-white overflow-hidden shadow-sm sm:rounded-lg"></div>
+                <div id='calendar'></div>
                 @php
                     $date = date('w');
                     $today = date('Y-m-d', strtotime('-' . $date . 'day'));
@@ -53,7 +53,8 @@
             start: `{{ $calendar[1][$i] }}`,
             allDay: true,
             borderColor: "#000",
-            color: "#f00"
+            color: "#f00",
+            url: "https://github.com/Dec4teamH/Dec4/issues/8"
         };
     </script>
 @endfor

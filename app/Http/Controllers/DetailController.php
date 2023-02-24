@@ -342,7 +342,7 @@ function register_issue($repos_id){
             if(!($pullreq_check)){
                 $issueIdCheck=DB::table('issues')->where('id', $resJsonIssue['id'])->exists();
             if(!($issueIdCheck)){
-                Issues::create(['id'=>$resJsonIssue['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
+                Issues::create(['id'=>$resJsonIssue['id'],'number'=>$resJsonIssue['number'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
             'user_id'=>$resJsonIssue['user']['id'],'assign_id'=>$assignee,'close_flag'=>0,'start_at'=>fix_timezone($start),'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
             }else{
                 $check_start=DB::table('issues')->where('id', $resJsonIssue['id'])->get("start_at");
@@ -405,7 +405,7 @@ function register_issue($repos_id){
             if(!($pullreq_check2)){
                 $issueIdCheck2=DB::table('issues')->where('id', $resJsonIssue2['id'])->exists();
                 if(!($issueIdCheck2)){
-                    Issues::create(['id'=>$resJsonIssue2['id'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
+                    Issues::create(['id'=>$resJsonIssue2['id'],'number'=>$resJsonIssue2['number'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue2['title'],'body'=>$resJsonIssue2['body'],
                 'user_id'=>$resJsonIssue2['user']['id'],'assign_id'=>$assignee,'close_flag'=>1,'start_at'=>fix_timezone($start2),'open_date'=>fix_timezone($resJsonIssue2['created_at']),'close_date'=>fix_timezone($resJsonIssue2['closed_at'])]);
                 }else{
                     // dd($resJsonIssue2);
