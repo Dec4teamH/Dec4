@@ -547,8 +547,12 @@ function evaluation($repos_id){
 
     $pullreq_count=Pullrequests::where('repositories_id',$repos_id)->count();
     //dd($pullreq_count);
-
-    $pullreq_ave=round($pullreq_count/$diff->days, 2);
+    if(($diff->days)===0){
+        $pullreq_ave=$pullreq_count;
+    }else{
+        $pullreq_ave=round($pullreq_count/$diff->days, 2);
+    }
+    
     // dd($pullreq_ave);
 
 
@@ -585,7 +589,12 @@ function evaluation($repos_id){
         }
     }
     //dd($sum);
-    $start_ave=round($sum/count($issues), 1);
+    if(count($issues)===0){
+        $start_ave=0;
+    }else{
+        $start_ave=round($sum/count($issues), 1);
+    }
+
     // dd($start_ave);
 
 
