@@ -34,7 +34,8 @@
                     @foreach ($calendar[7] as $open_at)
                         @if ($open_at->open_date < $today)
                             <div class="p-6 bg-white border-b border-gray-200">
-                                <a href={{ $calendar[10][$i] }}>{{ $open_at->title }}</a>
+                                <a href={{ $calendar[10][$i] }}>title:{{ $open_at->title }}.
+                                    .assignee:{{ $calendar[13][$i] }}</a>
                             </div>
                         @endif
                         @php
@@ -55,7 +56,8 @@
 @for ($i = 0; $i < $calendar[5]; $i++)
     <script>
         events[`{{ $i }}`] = {
-            title: `{{ $calendar[0][$i] }}`,
+            title: `title:{{ $calendar[0][$i] }}
+                    assignee:{{ $calendar[11][$i] }}`,
             start: `{{ $calendar[1][$i] }}`,
             allDay: true,
             borderColor: "#000",
@@ -67,7 +69,8 @@
 @for ($i = 0; $i < $calendar[6]; $i++)
     <script>
         events[`{{ $i + $calendar[5] }}`] = {
-            title: `{{ $calendar[2][$i] }}`,
+            title: `title:{{ $calendar[2][$i] }}
+                    assignee:{{ $calendar[12][$i] }}`,
             start: `{{ $calendar[3][$i] }}`,
             end: `{{ $calendar[4][$i] }}`,
             url: `{{ $calendar[9][$i] }}`,

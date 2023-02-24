@@ -48,6 +48,9 @@ function calendar($id){
   $start_url=array();
   $finish_url=array();
   $dis_url=array();
+  $start_assign=array();
+  $finish_assign=array();
+  $dis_assign=array();
   foreach($issues as $issue){
     if($issue->start_at!==null){
       // 開始してる
@@ -59,6 +62,8 @@ function calendar($id){
         $started_title[]=$issue->title;
         $started_start[]=$devs['year']."-".$devs['month']."-".$devs['day']." ".$devs['hour'].":".$devs['min'];
         $start_url[]="https://github.com/".$repositories->owner_name."/".$repositories->repos_name."/issues/".$issue->number;
+        $assignee=DB::table('gh_profiles')->where('id',$issue->assign_id)->first();
+        $start_assign[]=$assignee->acunt_name;
       }else{
         // 終了してru
         $devs=devide_time($issue->start_at);
@@ -67,18 +72,22 @@ function calendar($id){
         $finished_start[]=$devs['year']."-".$devs['month']."-".$devs['day']." ".$devs['hour'].":".$devs['min'];
         $finished_finish[]=$devf['year']."-".$devf['month']."-".$devf['day']." ".$devf['hour'].":".$devf['min'];
         $finish_url[]="https://github.com/".$repositories->owner_name."/".$repositories->repos_name."/issues/".$issue->number;
+        $assignee=DB::table('gh_profiles')->where('id',$issue->assign_id)->first();
+        $finish_assign[]=$assignee->acunt_name;
       }
     }else{
       if($issue->close_flag===0){
       $distart[]=$issue;
       $dis_url[]="https://github.com/".$repositories->owner_name."/".$repositories->repos_name."/issues/".$issue->number;
+      $assignee=DB::table('gh_profiles')->where('id',$issue->assign_id)->first();
+      $dis_assign[]=$assignee->acunt_name;
       }
     }
   }
   $s_count=count($started_title);
   $f_count=count($finished_title);
   // dd($started);
-  return [ $started_title, $started_start,$finished_title,$finished_start,$finished_finish,$s_count,$f_count,$distart,$start_url,$finish_url, $dis_url];
+  return [ $started_title, $started_start,$finished_title,$finished_start,$finished_finish,$s_count,$f_count,$distart,$start_url,$finish_url, $dis_url,$start_assign,$finish_assign,$dis_assign];
 }
 
 class IssueController extends Controller
