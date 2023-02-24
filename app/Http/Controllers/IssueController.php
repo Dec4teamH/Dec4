@@ -164,7 +164,8 @@ class IssueController extends Controller
         // dd($day,$open_total,$close_total);
         // dd($day_ratio);
         // end open close count foreach
-
+        $op_clos_ratios[$ratios_cnt] = $day_ratio;
+        $op_start_ratios[$ratios_cnt] = $day_start_ratio;
         $day++;
         $ratios_cnt++;
       }

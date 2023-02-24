@@ -68,7 +68,7 @@
             datasets: [
               {
                 type: 'bar',
-                label: 'Open issue ratio',
+                label: 'Open issue count',
                 backgroundColor: 'rgba(255, 99, 132,0.5)',
                 borderColor: 'rgba(255, 99, 132,0.5)',
                 data: op_totals,
