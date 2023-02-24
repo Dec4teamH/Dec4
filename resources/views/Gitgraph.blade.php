@@ -28,6 +28,27 @@
                     </form>
                     <canvas id='canvas' width="500" height="400" data="good"></canvas>
                 </div>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg my-2">
+                    <h1 class="p-6 font-bold text-xl text-gray-800">{{'評価基準'}}</h1>
+                    <div class="p-6 bg-white border-b border-gray-200">
+                        <div class="py-2">
+                            {{'issueの割合'}}
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['rate']*100}}%</h2>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white border-b border-gray-200">
+                        <div class="py-2">
+                            {{'issueの取り掛かる平均日'}}
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['start_ave']}}日</h2>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white border-b border-gray-200">
+                        <div class="py-2">
+                            {{'1日の平均プルリクエスト数'}}
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['pullreq_ave']}}回</h2>
+                        </div>
+                    </div>
+                </div>
                 <div>
                     @php
                         $i = 0;
@@ -61,9 +82,9 @@
             <script>
                 // 受け取った変数をjsに渡す
                 // コミットの数（仮置き）
-                const num = `{{ $evaluation['score'] }}`;
+                const num = `{{ $evaluation['total_score'] }}`;
                 // サイクルの状態（仮置き）
-                const cicle_state = `{{ $evaluation['state'] }}`;
+                const cicle_state = `{{ $evaluation['total_state'] }}`;
             </script>
             <script src="{{ asset('/js/graph.js') }}"></script>
 </x-app-layout>

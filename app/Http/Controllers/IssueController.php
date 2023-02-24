@@ -99,7 +99,7 @@ class IssueController extends Controller
      */
     public function index()
     {
-
+      
     }
 
     /**
@@ -176,13 +176,18 @@ class IssueController extends Controller
           // dd($day,$open_date,$close_date);
         }
 
-        $day_ratio = 100 / ($open_total + $close_total) * $open_total;
-        $day_start_ratio = 100 / ($open_total + $close_total) * $start_total;
+        if($open_total == 0){
+          $day_ratio = 0;
+          $day_start_ratio = 0;
+        }else{
+          $day_ratio = round(100 / ($open_total + $close_total) * $open_total);
+          $day_start_ratio = round(100 / ($open_total) * $start_total);
+        }
         // dd($day,$open_total,$close_total);
         // dd($day_ratio);
         // end open close count foreach
-        $op_clos_ratios[$ratios_cnt] = round($day_ratio);
-        $op_start_ratios[$ratios_cnt] = round($day_start_ratio);
+        $op_clos_ratios[$ratios_cnt] = $day_ratio;
+        $op_start_ratios[$ratios_cnt] = $day_start_ratio;
         $day++;
         $ratios_cnt++;
       }
