@@ -26,57 +26,57 @@ class IssueController extends Controller
      */
     public function index()
     {
-      $issues = DB::table('issues')
-        ->where('repositorys_id',$id)
-        ->join('gh_profiles','user_id', '=', 'gh_profiles.id')
-        ->join('repositories', 'repositories_id' , '=', 'repositories.id')
-        ->select('issues.*', 'gh_profiles.acunt_name','repositories.repos_name')
-        ->get();
-        // ddd($issues);
+      // $issues = DB::table('issues')
+      //   ->where('repositorys_id',$id)
+      //   ->join('gh_profiles','user_id', '=', 'gh_profiles.id')
+      //   ->join('repositories', 'repositories_id' , '=', 'repositories.id')
+      //   ->select('issues.*', 'gh_profiles.acunt_name','repositories.repos_name')
+      //   ->get();
+      //   // ddd($issues);
 
-      $op_clos_ratios = array_fill(0,7,0);
-      // ddd($op_clos_ratio);
-      $ratios_cnt = 0;
-      // date_default_timezone_set('UTC');
-      $day = (int)date("Ymd") - 6;
-      // ddd($day);
-      $day_ratio = 0.0;
+      // $op_clos_ratios = array_fill(0,7,0);
+      // // ddd($op_clos_ratio);
+      // $ratios_cnt = 0;
+      // // date_default_timezone_set('UTC');
+      // $day = (int)date("Ymd") - 6;
+      // // ddd($day);
+      // $day_ratio = 0.0;
 
-      foreach($op_clos_ratios as $ratios){
-        // sum open_total and close_total
-        $open_total = 0;
-        $close_total = 0;
-        foreach($issues as $issue){
-          // init values
-          
-          $open_date = (int)str_replace('-','',substr($issue->open_date, 0, 10));
-          $close_date = (int)str_replace('-','',substr($issue->close_date, 0, 10));
+      // foreach($op_clos_ratios as $ratios){
+      //   // sum open_total and close_total
+      //   $open_total = 0;
+      //   $close_total = 0;
+      //   foreach($issues as $issue){
+      //     // init values
+      //     
+      //     $open_date = (int)str_replace('-','',substr($issue->open_date, 0, 10));
+      //     $close_date = (int)str_replace('-','',substr($issue->close_date, 0, 10));
 
-          if($open_date > $day){
-            // まだ開いていないので計算しない
-          }
-          else if($day >= $open_date && $close_date >= $day || $day >= $open_date && $close_date == 0){
-            $open_total++;
-          }else{
-            $close_total++;
-          }
-          // dd($day,$open_date,$close_date);
-        }
-        $day_ratio = 100 / ($open_total + $close_total) * $open_total;
-        // dd($day,$open_total,$close_total);
-        // dd($day_ratio);
-        // end open close count foreach
-        $op_clos_ratios[$ratios_cnt] = round($day_ratio);
-        $day++;
-        $ratios_cnt++;
-      }
+      //     if($open_date > $day){
+      //       // まだ開いていないので計算しない
+      //     }
+      //     else if($day >= $open_date && $close_date >= $day || $day >= $open_date && $close_date == 0){
+      //       $open_total++;
+      //     }else{
+      //       $close_total++;
+      //     }
+      //     // dd($day,$open_date,$close_date);
+      //   }
+      //   $day_ratio = 100 / ($open_total + $close_total) * $open_total;
+      //   // dd($day,$open_total,$close_total);
+      //   // dd($day_ratio);
+      //   // end open close count foreach
+      //   $op_clos_ratios[$ratios_cnt] = round($day_ratio);
+      //   $day++;
+      //   $ratios_cnt++;
+      // }
 
-      // dd($op_clos_ratios);
-      $weeks = ["6day ago","5day ago","4day ago","3day ago","2day ago","1day ago","today"];
-      dd($id);
+      // // dd($op_clos_ratios);
+      // $weeks = ["6day ago","5day ago","4day ago","3day ago","2day ago","1day ago","today"];
+      // dd($id);
 
 
-      return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios,'weeks'=>$weeks,'id'=>$id]);
+      // return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios,'weeks'=>$weeks,'id'=>$id]);
     }
 
     /**
@@ -118,6 +118,7 @@ class IssueController extends Controller
         // ddd($issues);
 
       $op_clos_ratios = array_fill(0,7,0);
+      $op_start_ratios = array_fill(0,7,0);
       // ddd($op_clos_ratio);
       $ratios_cnt = 0;
       // date_default_timezone_set('UTC');
@@ -129,27 +130,40 @@ class IssueController extends Controller
         // sum open_total and close_total
         $open_total = 0;
         $close_total = 0;
+        $start_total = 0;
         foreach($issues as $issue){
           // init values
-          
+
           $open_date = (int)str_replace('-','',substr($issue->open_date, 0, 10));
           $close_date = (int)str_replace('-','',substr($issue->close_date, 0, 10));
+          $start_date = (int)str_replace('-','',substr($issue->start_at, 0, 10));
 
+          // Issue の open数とclose数をカウントする
           if($open_date > $day){
             // まだ開いていないので計算しない
-          }
-          else if($day >= $open_date && $close_date >= $day || $day >= $open_date && $close_date == 0){
+          }else if($day >= $open_date && $close_date >= $day || $day >= $open_date && $close_date == 0){
             $open_total++;
+            if($day >= $start_date && $start_date != 0){
+              $start_total++;
+            }
           }else{
             $close_total++;
           }
           // dd($day,$open_date,$close_date);
         }
-        $day_ratio = 100 / ($open_total + $close_total) * $open_total;
+
+        if($open_total == 0){
+          $day_ratio = 0;
+          $day_start_ratio = 0;
+        }else{
+          $day_ratio = round(100 / ($open_total + $close_total) * $open_total);
+          $day_start_ratio = round(100 / ($open_total) * $start_total);
+        }
         // dd($day,$open_total,$close_total);
         // dd($day_ratio);
         // end open close count foreach
-        $op_clos_ratios[$ratios_cnt] = round($day_ratio);
+        $op_clos_ratios[$ratios_cnt] = $day_ratio;
+        $op_start_ratios[$ratios_cnt] = $day_start_ratio;
         $day++;
         $ratios_cnt++;
       }
@@ -157,7 +171,7 @@ class IssueController extends Controller
       $weeks = ["6day ago","5day ago","4day ago","3day ago","2day ago","1day ago","today"];
 
 
-      return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios,'weeks'=>$weeks,'id'=>$id]);
+      return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios,'start_ratios'=>$op_start_ratios,'weeks'=>$weeks,'id'=>$id]);
     }
 
     /**
