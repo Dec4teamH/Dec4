@@ -74,55 +74,67 @@
             start: `{{ $calendar[3][$i] }}`,
             end: `{{ $calendar[4][$i] }}`,
             url: `{{ $calendar[9][$i] }}`,
-
         };
     </script>
 @endfor
-<script type="text/javascript">
-    <?php
-    $json_weeks = json_encode($weeks);
-    $json_ratios = json_encode($ratios);
-    $json_start_ratios = json_encode($start_ratios);
-    ?>
+    <script type="text/javascript">
+        <?php
+        $json_weeks = json_encode($weeks);
+        $json_ratios = json_encode($ratios);
+        $json_start_ratios = json_encode($start_ratios);
+        $json_open_count = json_encode($open_totals);
+        ?>
 
-    var labels = <?php echo $json_weeks; ?>;
-    var op_ratios = <?php echo $json_ratios; ?>;
-    var start_ratios = <?php echo $json_start_ratios; ?>;
+        var labels = <?php echo $json_weeks; ?>;
+        var op_ratios = <?php echo $json_ratios; ?>;
+        var start_ratios = <?php echo $json_start_ratios; ?>;
+        var op_totals = <?php echo $json_open_count; ?>;
 
-    const data = {
-        labels: labels,
-        datasets: [{
-                label: 'Open issue ration',
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
-                data: op_ratios,
-            },
-            {
-                label: 'Start issue ration',
+        const data = {
+            labels: labels,
+            datasets: [
+              {
+                type: 'bar',
+                label: 'Open issue count',
+                backgroundColor: 'rgba(255, 99, 132,0.5)',
+                borderColor: 'rgba(255, 99, 132,0.5)',
+                data: op_totals,
+                yAxisID: 'open_total',
+              },
+              {
+                type: 'line',
+                label: 'Start issue ratio',
                 backgroundColor: 'rgb(160, 217, 262)',
                 borderColor: 'rgb(160, 217, 262)',
                 data: start_ratios,
-            }
-        ]
-    };
+                yAxisID: 'start_ratio',
+              }
+            ]
+        };
 
-    const config = {
-        type: 'line',
-        data: data,
-        options: {
+        const config = {
+          data: data,
+          options: {
             responsive: true,
-            plugins: {
-                display: true,
-                text: 'Opne_Closeの割合'
-            },
             scales: {
-                y: {
-                    min: 0,
-                    max: 100,
-                }
+              'open_total': {
+                type: 'linear',
+                position: 'left',
+                min: 0,
+                stepSize:1,
+              },
+              'start_ratio':{
+                id: 'start_ratio',
+                type: 'linear',
+                position: 'right',
+                max: 100,
+                min: 0,
+                stepSize: ,
+              }
             }
-        }
-    };
+          }
+        };
+  
 
     const myChart = new Chart(
         document.getElementById('myissue'),

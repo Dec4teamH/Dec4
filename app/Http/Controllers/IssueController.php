@@ -143,6 +143,7 @@ class IssueController extends Controller
 
       $op_clos_ratios = array_fill(0,7,0);
       $op_start_ratios = array_fill(0,7,0);
+      $op_totals = array_fill(0,7,0);
       // ddd($op_clos_ratio);
       $ratios_cnt = 0;
       // date_default_timezone_set('UTC');
@@ -182,6 +183,7 @@ class IssueController extends Controller
         }else{
           $day_ratio = round(100 / ($open_total + $close_total) * $open_total);
           $day_start_ratio = round(100 / ($open_total) * $start_total);
+          $op_totals[$ratios_cnt] = $open_total;
         }
         // dd($day,$open_total,$close_total);
         // dd($day_ratio);
@@ -195,7 +197,9 @@ class IssueController extends Controller
       $weeks = ["6day ago","5day ago","4day ago","3day ago","2day ago","1day ago","today"];
 
 
-      return view('Gitissue_view',['issues'=>$issues,'ratios'=>$op_clos_ratios,'start_ratios'=>$op_start_ratios,'weeks'=>$weeks,'id'=>$id,'calendar'=>$data]);
+
+      return view('Gitissue_view',['issues'=>$issues,'open_totals'=>$op_totals,'ratios'=>$op_clos_ratios,'start_ratios'=>$op_start_ratios,'weeks'=>$weeks,'id'=>$id,'calendar'=>$data]);
+
     }
 
     /**
