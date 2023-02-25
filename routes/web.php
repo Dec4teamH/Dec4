@@ -30,17 +30,18 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+Route::group(['middleware' => 'auth'], function () {
+    Route::resource('dashboard',GithubController::class)->middleware(['auth', 'verified']);
 
-Route::resource('dashboard',GithubController::class)->middleware(['auth', 'verified']);
+    Route::resource('detail',DetailController::class);
+    Route::get('/pullrequest/{id}', [DetailController::class, 'pullrequest']);
 
-Route::resource('detail',DetailController::class);
-Route::get('/pullrequest/{id}', [DetailController::class, 'pullrequest']);
+    Route::resource('repository',RepositoryController::class);
 
-Route::resource('repository',RepositoryController::class);
+    Route::resource('organization',OrganizationController::class);
 
-Route::resource('organization',OrganizationController::class);
-
-Route::resource('issue',IssueController::class);
+    Route::resource('issue',IssueController::class);
+});
 
 // graph commit表示のルーテイング
 Route::get('/graph/commit',function(){
