@@ -1,23 +1,36 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex">
-            <a href="{{ route('detail.show', $id) }}">
-                {{ __('Index') }}
-            </a>
-            <!-- Pullrequest Links -->
-            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                <a href="/pullrequest/{{ $id }}">
-                    {{ __('Pullrequest') }}
+  <x-slot name="header">
+      <div class="flex justify-between">
+            <div class="flex">
+                <a href="{{ route('detail.show', $id) }}">
+                    {{ __('Index') }}
                 </a>
+                <!-- Pullrequest Links -->
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <a href="/pullrequest/{{ $id }}">
+                        {{ __('Pullrequest') }}
+                    </a>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <a href="{{ route('issue.show', $id) }}">
+                        {{ __('Issue') }}
+                    </a>
+                </div>
             </div>
-            <!-- Issue Link -->
-            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                <a href="{{ route('issue.show', $id) }}">
-                    {{ __('Issue') }}
-                </a>
+            <div>
+                <form action="{{ route('detail.edit', $id) }}" method="get">
+                    @csrf
+                    <button type="submit">
+                        <svg class="h-8 w-8 text-green-500"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round">  
+                            <polyline points="1 4 1 10 7 10" />  
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                        </svg>
+                    </button>
+                </form>
             </div>
         </div>
-    </x-slot>
+  </x-slot>
+
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">

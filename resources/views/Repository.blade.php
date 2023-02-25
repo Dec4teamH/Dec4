@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
+            {{ __('Repositories') }}
         </h2>
     </x-slot>
 
@@ -12,7 +12,9 @@
                     @foreach ($repositories as $repository)
                         <ul>
                             <li>
-                                <a href="{{ route('detail.show', $repository->id) }}">{{ $repository->repos_name }}</a>
+                                <div class="p-6 bg-white border-b border-gray-200">
+                                    <a href="{{ route('detail.show', $repository->id) }}">{{ $repository->repos_name }}</a>
+                                </div>
                             </li>
                         </ul>
                     @endforeach
