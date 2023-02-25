@@ -39,7 +39,7 @@
             <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
                 <div class="flex-col pt-8 sm:justify-start sm:pt-0">
                     <img class="block h-9 w-auto fill-current text-gray-800" src="/images/Dec4_logo2.png">
-                    <img class="block h-1/2 w-auto fill-current text-gray-800" src="/images/text.png">
+                    <img class="block h-9 w-auto fill-current text-gray-800" src="/images/text.jpg">
                 </div>
 
                 <!-- <div class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
