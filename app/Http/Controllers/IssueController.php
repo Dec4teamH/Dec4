@@ -164,15 +164,23 @@ class IssueController extends Controller
           $start_date = (int)str_replace('-','',substr($issue->start_at, 0, 10));
 
           // Issue の open数とclose数をカウントする
-          if($open_date > $day){
-            // まだ開いていないので計算しない
-          }else if($day >= $open_date && $close_date >= $day || $day >= $open_date && $close_date == 0){
-            $open_total++;
-            if($day >= $start_date && $start_date != 0){
-              $start_total++;
+          if($ratios_cnt == 6){
+            if($issue->close_flag == 1){
+              $close_total++;
+            }else{
+              $open_total++;
             }
           }else{
-            $close_total++;
+            if($open_date > $day){
+              // まだ開いていないので計算しない
+            }else if($day >= $open_date && $close_date >= $day || $day >= $open_date && $close_date == 0){
+              $open_total++;
+              if($day >= $start_date && $start_date != 0){
+                $start_total++;
+              }
+            }else{
+              $close_total++;
+            }
           }
           // dd($day,$open_date,$close_date);
         }
