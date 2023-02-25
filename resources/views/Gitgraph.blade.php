@@ -48,7 +48,13 @@
                     <div class="p-6 bg-white border-b border-gray-200">
                         <div class="py-2">
                             {{'issueの取り掛かる平均日'}}
-                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['start_ave']}}日</h2>
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">
+                                @if($evaluation['start_ave']=='None')
+                                    {{$evaluation['start_ave']}}
+                                @else
+                                    {{$evaluation['start_ave']}}日
+                                @endif
+                            </h2>
                         </div>
                     </div>
                     <div class="p-6 bg-white border-b border-gray-200">
