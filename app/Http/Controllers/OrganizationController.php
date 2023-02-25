@@ -2,23 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Validator;
 use App\Models\Gh_profiles;
 use App\Models\Gh_accounts;
 use App\Models\Organization;
 use App\Models\Repositories;
-use App\Models\Issues;
 use App\Models\Commits;
+use App\Models\Issues;
 use App\Models\Pullrequests;
-
-use Dotenv\Validator as DotenvValidator;
-use App\Models\User;
-use Auth;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth as FacadesAuth;
 use DB;
-
-
 // githubapiから取得したじかんをDBに格納できるtimestampがたに変換
 // 0000-00-00T00:00:00Zを日本時間に直すかは考える
 function fix_timezone($timestamp){
@@ -105,15 +98,12 @@ function event_getter($repos_id,$get_id){
     // dd($user_name);
     // dd($name[0]->repos_name);
     // dd($access_token);
+    $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events?per_page=100", null, ['Authorization: Bearer ' . $access_token]);
+    // dd($events);
     $Commit_event=array();
     $Issues_event=array();
     $Pullreq_event=array();
-    $i=1;
-    while(true){ 
-    $events=httpRequest('get',"https://api.github.com/repos/".$user_name."/".$name[0]->repos_name."/events?per_page=100&page=".$i, null, ['Authorization: Bearer ' . $access_token]);
-    // dd($events);
-    if(!(array_key_exists("message",$events))){
-        foreach ($events as $event){
+    foreach ($events as $event){
         // dd($event["type"]);
         // commit
         
@@ -134,14 +124,7 @@ function event_getter($repos_id,$get_id){
         else{
             // dd($event);
         }
-    }  
-    $i++;
-}else{
-    break;
-}
-}
-    // dd($Pullreq_event);
-    // dd($Commit_event);
+    }
     if($get_id===0){return  array_reverse($Commit_event);}
     else if($get_id===1){return array_reverse($Issues_event);}
     else if($get_id===2){return array_reverse($Pullreq_event);}
@@ -273,6 +256,7 @@ function gh_pullreqest($repos_id){
     }
 }
 
+
 // issueの登録
 function register_issue($repos_id){ 
         $repository=DB::table('repositories')->where("id",$repos_id)->first();
@@ -336,10 +320,9 @@ function register_issue($repos_id){
             // dd($resJsonIssue);
             // dd($resJsonIssue['reactions']);
             $start_ats=httpRequest('get',$resJsonIssue['reactions']['url'], null, ['Authorization: Bearer ' . $access_token]);
-           
+            // dd($start_at);
             $start=null;
             foreach($start_ats as $start_at){
-                 // dd($start_at);
                 if($start_at['content']==="rocket"){
                     $start=$start_at['created_at'];
                 }
@@ -358,6 +341,7 @@ function register_issue($repos_id){
                 Issues::create(['id'=>$resJsonIssue['id'],'number'=>$resJsonIssue['number'],'repositories_id'=>$repos_id,'title'=>$resJsonIssue['title'],'body'=>$resJsonIssue['body'],
             'user_id'=>$resJsonIssue['user']['id'],'assign_id'=>$assignee,'close_flag'=>0,'start_at'=>fix_timezone($start),'open_date'=>fix_timezone($resJsonIssue['created_at'])]);
             }else{
+
                 $check_start=DB::table('issues')->where('id', $resJsonIssue['id'])->get("start_at");
                 // dd($check_start[0]->start_at);
                 if($check_start[0]->start_at===null){
@@ -377,7 +361,8 @@ function register_issue($repos_id){
                     'close_flag'=>0,
                     'open_date'=>fix_timezone($resJsonIssue['created_at'])
                 ]);
-                }
+                }                
+
             }
         }else{
             continue;
@@ -449,6 +434,7 @@ function register_issue($repos_id){
             }
         }
 }
+// 
                             // repositry情報をDBに登録
 function gh_repository($id){
 //  repos
@@ -510,13 +496,9 @@ function gh_repository($id){
 function gh_user($access_token){
 // User情報
         $resJsonUser =  httpRequest('get', 'https://api.github.com/user', null, ['Authorization: Bearer ' . $access_token]);
-        // dd($resJsonUser);
+        //dd($resJsonUser);
         // Gh_ profiles
         // githubのaccountidがテーブルに存在しているのか確認
-        // アクセストークンが違った場合
-        if(array_key_exists("message",$resJsonUser)){
-            return false;
-        }
         $ghIdCheck=DB::table('gh_profiles')->where('id', $resJsonUser['id'])->exists();
         if(!($ghIdCheck)){
             // idが存在しないならDBに追加
@@ -539,7 +521,6 @@ function gh_user($access_token){
         }
         $id=DB::table('gh_profiles')->where('access_token',$access_token)->first();
         gh_repository($id->id);
-        return true;
 }
 
 
@@ -599,10 +580,7 @@ function gh_organization($access_token){
 
 }
 
-
-
-
-class GithubController extends Controller
+class OrganizationController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -611,24 +589,9 @@ class GithubController extends Controller
      */
     public function index()
     {
-  // DBから登録したアクセストークンをもとに登録したgithubのアカウントを表示
-    $user_id=Auth::user()->id;
-    // gh_account_idをuser_idで条件づけて取得
-    $gh_account_ids=Gh_accounts::where('user_id',$user_id)->get();
-    // gh_account_idからacunt_nameを持ってくる
-    $gh_profs=array();
-    foreach($gh_account_ids as $gh_account_id){
-    $gh_profs[]=Gh_profiles::where('id',$gh_account_id['gh_account_id'])->get();
+        //
     }
-    // dd($gh_profs);
-    if(isset($gh_profs)) {
-        return view('dashboard',["gh_names"=>$gh_profs]);
-    }
-    else{
-//   下で手に入る情報もstoreのときにDBに格納して、毎回apiで情報をとるのではなくDBから取り出す
-    return view ('dashboard');
-}
-    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -645,40 +608,54 @@ class GithubController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    // dashboardのpostメソッド（アクセストークン登録後の遷移）
     public function store(Request $request)
-    { 
-        // validation
-        $validator=Validator::make($request->all(),[
-            'access_token'=>'required',
-        ]);
-        if ($validator->fails()) {
-            return redirect()
-            ->route('dashboard.index');
-        }
-        $access_token=$request->access_token;
-        // apiでデータ取得
-        // DBに格納
-// user
-        $access=gh_user($access_token);
-        if($access){
-// orgs
-        gh_organization($access_token);
+    {
+        //
+    }
 
-        $owner_id=DB::table('gh_profiles')->where('access_token',$access_token)->first();
-        $ids=DB::table('repositories')->where('owner_id',$owner_id->id)->get();
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $orgs=DB::table('organizations')->where('gh_account_id',$id)->get();
+        // dd($orgs);
+        $gh_profs=array();
+        foreach ($orgs as $org){
+            $gh_profs[]=DB::table('gh_profiles')->where('id',$org->organization_id)->first();
+        }
+        // dd($gh_profs);
+        return view("organization",["gh_profs"=>$gh_profs,"id"=>$id]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $access_token=DB::table('gh_profiles')->where('id',$id)->first();
+        // dd($access_token);
+        gh_organization($access_token->access_token);
+        gh_repository($id);
         // commitの登録
-        foreach($ids as $id){
-            // dd($id);
-        $error=register_commit($id->id);
+        $ids=DB::table('repositories')->where('owner_id',$id)->get();
+        foreach($ids as $repos_id){
+            // dd($repos_id);
+        $error=register_commit($repos_id->id);
         // dd($error);
         // pullrequestの登録
-        gh_pullreqest($id->id);
+        gh_pullreqest($repos_id->id);
         // issueの登録
-        // dd(event_getter($id,1));
-        register_issue($id->id);
+        // dd(event_getter($repos_id,1));
+        register_issue($repos_id->id);
         }
-        $organization_ids=DB::table('organizations')->where('gh_account_id',$owner_id ->id)->get();
+        $organization_ids=DB::table('organizations')->where('gh_account_id',$id)->get();
         foreach($organization_ids as $organization_id){
             // dd($organization_id);]
             $repos_ids=DB::table('repositories')->where('owner_id',$organization_id->organization_id)->get();
@@ -692,34 +669,7 @@ class GithubController extends Controller
         register_issue($repos_id->id);
             }
         }
-        return redirect()->route("dashboard.index");
-    }else{
-        return redirect()->route("dashboard.index")
-        ->withInput()
-        ->withErrors("access tokenが違います");
-    }
-}
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  varchar(255)  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        
+        return redirect()->route('organization.show',$id);
     }
 
     /**
@@ -731,7 +681,7 @@ class GithubController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        
     }
 
     /**
@@ -742,14 +692,6 @@ class GithubController extends Controller
      */
     public function destroy($id)
     {
-        //dd($gh_id);
-        // idが同じ各テーブルを削除
-        DB::table('repositories')->where('owner_id',$id)->delete();
-        DB::table('gh_profiles')->where('id',$id)
-        ->update([
-            "access_token"=>null
-        ]);
-        DB::table('gh_accounts')->where('gh_account_id',$id)->delete();
-        return redirect()->route('dashboard.index');
+        //
     }
 }

@@ -6,14 +6,14 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard.index') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                        <img class="block h-9 w-auto fill-current text-gray-800" src="/images/Dec4_logo2.png">
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link :href="route('dashboard.index')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
+                        <img class="block h-1/2 w-auto fill-current text-gray-800" src="/images/text.jpg">
                     </x-nav-link>
                 </div>
             </div>
@@ -79,7 +79,6 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>
-
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">

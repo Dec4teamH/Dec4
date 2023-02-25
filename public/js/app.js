@@ -1,19 +1,7 @@
-function redirectValue(event) {
-        
-    let loc = location;
-    let value = event.target.value;
-        
-    if(loc.search !== '')
-        value += loc.search;
-        
-    if(loc.hash !== '')
-        value += loc.hash;
-        
-    location.href =local;
-
-    //URLの場合はこちら
-    //location.href = value;
+function alert() {
+    if(window.confirm('削除してもよろしいですか？')) {
+        return true;
+    } else {
+        return false;
+    }
 }
-    
-let selectbox = document.getElementById('state');
-selectbox.addEventListener('change',redirectValue, false);
