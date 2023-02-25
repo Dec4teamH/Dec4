@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('issues', function (Blueprint $table) {
             $table->integer('id')->primary('id');
+            $table->integer('number');
             $table->integer('repositories_id');
             $table->foreign('repositories_id')->references('id')->on('repositories')->cascadeOnDelete();
             $table->string('title')->nullable();
