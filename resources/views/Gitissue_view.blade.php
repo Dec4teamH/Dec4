@@ -1,6 +1,6 @@
 <x-app-layout>
-  <x-slot name="header">
-      <div class="flex justify-between">
+    <x-slot name="header">
+        <div class="flex justify-between">
             <div class="flex">
                 <a href="{{ route('detail.show', $id) }}">
                     {{ __('Index') }}
@@ -21,15 +21,16 @@
                 <form action="{{ route('detail.edit', $id) }}" method="get">
                     @csrf
                     <button type="submit">
-                        <svg class="h-8 w-8 text-green-500"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round">  
-                            <polyline points="1 4 1 10 7 10" />  
+                        <svg class="h-8 w-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="1 4 1 10 7 10" />
                             <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
                         </svg>
                     </button>
                 </form>
             </div>
         </div>
-  </x-slot>
+    </x-slot>
 
 
     <div class="py-12">
@@ -47,8 +48,8 @@
                     @foreach ($calendar[7] as $open_at)
                         @if ($open_at->open_date < $today)
                             <div class="p-6 bg-white border-b border-gray-200">
-                                <a href={{ $calendar[10][$i] }}>title:{{ $open_at->title }}.
-                                    .assignee:{{ $calendar[13][$i] }}</a>
+                                <a
+                                    href={{ $calendar[10][$i] }}>title:{{ $open_at->title }}&nbsp;&nbsp;assignee:{{ $calendar[13][$i] }}</a>
                             </div>
                         @endif
                         @php

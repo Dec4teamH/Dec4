@@ -94,7 +94,7 @@ const step = () => {
         }
         t = 0;
     }
-    console.log(r, g, b);
+    // console.log(r, g, b);
     context.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
     // 矢印
     let theta = (speed * tm / 720) * Math.PI;
