@@ -30,10 +30,9 @@ function fix_timezone($timestamp){
     $min=mb_substr($timestamp,14,2);
     $sec=mb_substr($timestamp,17,2);
     $fixed_time=$year."-".$month."-".$day." ".$hour.":".$min.":".$sec;
-    return $fixed_time;
-}else{
-    return null;
-}
+    $date=date("Y-m-d H:i:s",strtotime('+9hour'.$fixed_time));
+    return $date;
+}else{return null;}
 }
 
 // curlの情報をjson形式でreturn 

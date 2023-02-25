@@ -21,17 +21,18 @@ use Carbon\Carbon;
 use Illuminate\Support\Arr;
 
 // commitの取得時間をdatetime型に変換する関数
-function fix_timezone($datetime){
-    $year=mb_substr($datetime,0,4);
-    $month=mb_substr($datetime,5,2);
-    $day=mb_substr($datetime,8,2);
-    $hour=mb_substr($datetime,11,2);
-    $min=mb_substr($datetime,14,2);
-    $sec=mb_substr($datetime,17,2);
-    
+function fix_timezone($timestamp){
+    if($timestamp!=null){
+    $year=mb_substr($timestamp,0,4);
+    $month=mb_substr($timestamp,5,2);
+    $day=mb_substr($timestamp,8,2);
+    $hour=mb_substr($timestamp,11,2);
+    $min=mb_substr($timestamp,14,2);
+    $sec=mb_substr($timestamp,17,2);
     $fixed_time=$year."-".$month."-".$day." ".$hour.":".$min.":".$sec;
-    if($fixed_time=="-- ::"){return null;}
-    return $fixed_time;
+    $date=date("Y-m-d H:i:s",strtotime('+9hour'.$fixed_time));
+    return $date;
+}else{return null;}
 }
 
 // curlの情報をjson形式でreturn 
