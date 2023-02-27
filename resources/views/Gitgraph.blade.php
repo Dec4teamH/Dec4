@@ -58,7 +58,7 @@
                     <div class="p-6 bg-white border-b border-gray-200">
                         <div>
                             {{'issueの割合'}}
-                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['rate']*100}}%</h2>
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['rate']*100}}%　　{{$evaluation['rate_state']}}</h2>
                         </div>
                     </div>
                     <div class="p-6 bg-white border-b border-gray-200">
@@ -66,9 +66,9 @@
                             {{'issueの取り掛かる平均日'}}
                             <h2 class="font-bold text-xl text-gray-800 leading-tight">
                                 @if($evaluation['start_ave']=='None')
-                                    {{$evaluation['start_ave']}}
+                                    {{$evaluation['start_ave']}}　　{{$evaluation['start_state']}}
                                 @else
-                                    {{$evaluation['start_ave']}}日
+                                    {{$evaluation['start_ave']}}日　　{{$evaluation['start_state']}}
                                 @endif
                             </h2>
                         </div>
@@ -76,7 +76,7 @@
                     <div class="p-6 bg-white border-b border-gray-200">
                         <div>
                             {{'1日の平均プルリクエスト数'}}
-                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['pullreq_ave']}}回</h2>
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['pullreq_ave']}}回　　{{$evaluation['pullreq_state']}}</h2>
                         </div>
                     </div>
                 </div>
