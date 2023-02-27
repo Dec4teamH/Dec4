@@ -663,16 +663,16 @@ function evaluation($repos_id){
 function get_evaluation($score){
     switch($score){
         case 4:
-            return "A";
+            return "A : よくできています";
             break;
         case 3:
-            return "B";
+            return "B : できています";
             break;
         case 2:
-            return "C";
+            return "C : あまりできていません";
             break;
         case 1:
-            return "D";
+            return "D : できていません";
             break;
         default:
             return "None";

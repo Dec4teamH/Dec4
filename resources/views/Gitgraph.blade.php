@@ -38,33 +38,50 @@
                     <canvas id='canvas' width="500" height="400" data="good"></canvas>
                 </div>
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg my-2">
-                    <p class="px-6 font-bold text-3xl text-gray-800 border-b border-gray-200">{{'評価基準'}}</p>
+                    <p class="px-6 font-bold text-3xl text-gray-800 border-b border-gray-200">{{'評価'}}</p>
+                    <div class="pb-6 bg-white">
+                        <div class="p-6 bg-white border-b border-gray-200">
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{'A : 非常に開発が進んでいます'}}</h2>
+                        </div>
+                        <div class="p-6 bg-white border-b border-gray-200">
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{'B : まずまず開発が進んでいます'}}</h2>
+                        </div>
+                        <div class="p-6 bg-white border-b border-gray-200">
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{'C : あまり開発が進んでいません'}}</h2>
+                        </div>
+                        <div class="p-6 bg-white border-b border-gray-200">
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{'D : 開発が進んでいません'}}</h2>
+                        </div>
+                    </div>
+
+                    <p class="px-6 pt-6 font-bold text-3xl text-gray-800 border-b border-gray-200">{{'評価基準'}}</p>
                     <div class="p-6 bg-white border-b border-gray-200">
-                        <div class="py-2">
+                        <div>
                             {{'issueの割合'}}
-                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['rate']*100}}%</h2>
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['rate']*100}}%　　{{$evaluation['rate_state']}}</h2>
                         </div>
                     </div>
                     <div class="p-6 bg-white border-b border-gray-200">
-                        <div class="py-2">
+                        <div>
                             {{'issueの取り掛かる平均日'}}
                             <h2 class="font-bold text-xl text-gray-800 leading-tight">
                                 @if($evaluation['start_ave']=='None')
-                                    {{$evaluation['start_ave']}}
+                                    {{$evaluation['start_ave']}}　　{{$evaluation['start_state']}}
                                 @else
-                                    {{$evaluation['start_ave']}}日
+                                    {{$evaluation['start_ave']}}日　　{{$evaluation['start_state']}}
                                 @endif
                             </h2>
                         </div>
                     </div>
                     <div class="p-6 bg-white border-b border-gray-200">
-                        <div class="py-2">
+                        <div>
                             {{'1日の平均プルリクエスト数'}}
-                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['pullreq_ave']}}回</h2>
+                            <h2 class="font-bold text-xl text-gray-800 leading-tight">{{$evaluation['pullreq_ave']}}回　　{{$evaluation['pullreq_state']}}</h2>
                         </div>
                     </div>
                 </div>
-                <div>
+                <p class="px-6 pt-6 font-bold text-3xl text-gray-800 border-b border-gray-200">{{'コミット履歴'}}</p>
+                <div class="px-6 py-2">
                     @php
                         $i = 0;
                     @endphp
